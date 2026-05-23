@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutti i Giochi — RL Software</title>
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/400.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/700.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.0/700.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray-light: #f4f4f5;
+            --gray: #e4e4e7;
+            --gray-dark: #71717a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--gray-light); color: var(--black); overflow-x: hidden; line-height: 1.6; }
+
+        /* Navigation */
+        nav {
+            position: sticky; top: 0; z-index: 2000;
+            padding: 0 40px; height: 72px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray);
+        }
+
+        .nav-logo {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: -1px;
+            color: var(--black); text-decoration: none; display: flex; align-items: center; gap: 4px;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--black); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        .nav-actions { display: flex; align-items: center; gap: 16px; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+            border: none; font-family: 'Inter', sans-serif;
+        }
+        .btn-primary { background: var(--black); color: var(--white); }
+        .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--black); border: 1px solid var(--gray); }
+        .btn-outline:hover { border-color: var(--black); background: var(--gray-light); }
+        .btn-accent { background: var(--accent); color: var(--white); }
+        .btn-accent:hover { background: var(--accent-hover); }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+        /* User Menu */
+        .user-menu-container { position: relative; display: none; }
+        .user-avatar-btn {
+            width: 38px; height: 38px; border-radius: 50%; background: var(--gray-light); border: 2px solid var(--gray);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: border-color 0.2s;
+        }
+        .user-avatar-btn:hover { border-color: var(--accent); }
+        .user-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        .dropdown-menu {
+            position: absolute; top: 50px; right: 0; width: 220px; background: var(--white);
+            border: 1px solid var(--gray); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease; z-index: 2001; overflow: hidden;
+        }
+        .dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-header { padding: 14px; border-bottom: 1px solid var(--gray-light); }
+        .dropdown-email { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; text-decoration: none; color: var(--black); font-size: 0.85rem; transition: background 0.2s; }
+        .dropdown-item:hover { background: var(--gray-light); }
+        .dropdown-divider { height: 1px; background: var(--gray-light); margin: 4px 0; }
+        .dropdown-item.logout { color: var(--danger); }
+
+        /* Page Header */
+        .page-header {
+            padding: 48px 40px 32px;
+            background: var(--white);
+            border-bottom: 1px solid var(--gray);
+        }
+        .page-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .page-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            color: var(--gray-dark);
+            font-size: 1rem;
+        }
+
+        /* Search & Filters Bar */
+        .search-bar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray);
+            padding: 20px 40px;
+            position: sticky;
+            top: 72px;
+            z-index: 100;
+        }
+        .search-bar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 240px;
+            position: relative;
+        }
+        .search-input-wrapper svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--gray-dark);
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 42px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: var(--gray-light);
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            background: var(--white);
+        }
+        .search-select {
+            padding: 10px 14px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            background: var(--gray-light);
+            cursor: pointer;
+            min-width: 150px;
+            transition: border-color 0.2s;
+        }
+        .search-select:focus {
+            border-color: var(--accent);
+            background: var(--white);
+        }
+        .results-count {
+            font-size: 0.8rem;
+            color: var(--gray-dark);
+            white-space: nowrap;
+        }
+        .btn-clear {
+            padding: 8px 14px;
+            background: transparent;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--gray-dark);
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-clear:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 40px 80px;
+        }
+
+        /* ==================== COMING SOON ADS ==================== */
+        .ads-section {
+            margin-bottom: 48px;
+        }
+        .ads-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .ads-section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ads-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 100px;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+
+        /* Ads Carousel */
+        .ads-carousel-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+        .ads-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 4px;
+        }
+        .ads-carousel::-webkit-scrollbar { display: none; }
+
+        /* Ad Card */
+        .ad-card {
+            flex: 0 0 340px;
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--gray);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: default;
+        }
+        .ad-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+            border-color: var(--warning);
+        }
+
+        .ad-card-img {
+            height: 160px;
+            background: linear-gradient(135deg, #1e1e2e, #2d2d44);
+            position: relative;
+            overflow: hidden;
+        }
+        .ad-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0.85;
+        }
+        .ad-card:hover .ad-card-img img {
+            transform: scale(1.06);
+            opacity: 1;
+        }
+        /* Overlay gradient on image */
+        .ad-card-img::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
+        }
+
+        .ad-badge-cs {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(245, 158, 11, 0.95);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Countdown on card */
+        .ad-release-date {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .ad-release-label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+        }
+        .ad-release-value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .ad-release-value.tbd {
+            color: rgba(255,255,255,0.6);
+            font-style: italic;
+            font-size: 0.75rem;
+        }
+
+        .ad-card-body {
+            padding: 18px 20px 20px;
+        }
+        .ad-card-genre {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--warning);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .ad-card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+        .ad-card-dev {
+            font-size: 0.78rem;
+            color: var(--gray-dark);
+            margin-bottom: 10px;
+        }
+        .ad-card-desc {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.55;
+            margin-bottom: 14px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .ad-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--gray-light);
+        }
+        .ad-notify-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            background: var(--black);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .ad-notify-btn:hover {
+            background: var(--warning);
+        }
+        .ad-notify-btn.notified {
+            background: var(--success);
+            cursor: default;
+        }
+        .ad-card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .ad-tag {
+            padding: 3px 8px;
+            background: var(--gray-light);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+
+        /* No ads placeholder */
+        .ads-empty {
+            padding: 28px;
+            text-align: center;
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px dashed var(--gray);
+            color: var(--gray-dark);
+            font-size: 0.9rem;
+        }
+
+        /* Carousel nav arrows */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            background: var(--white);
+            border: 1px solid var(--gray);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            z-index: 10;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        .carousel-arrow:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+        .carousel-arrow.left { left: -18px; }
+        .carousel-arrow.right { right: -18px; }
+        .carousel-arrow.hidden { opacity: 0; pointer-events: none; }
+
+        /* Divider between ads and games */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .section-divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--gray);
+        }
+        .section-divider-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Submit Section */
+        .submit-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .submit-text {
+            font-size: 0.95rem;
+            color: var(--gray-dark);
+        }
+        .submit-text strong {
+            color: var(--black);
+        }
+
+        /* Games Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 28px;
+        }
+
+        .game-card {
+            background: var(--white);
+            border: 1px solid var(--gray);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+            border-color: var(--accent);
+        }
+
+        .card-img {
+            height: 200px;
+            background: var(--gray-light);
+            position: relative;
+            overflow: hidden;
+        }
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .game-card:hover .card-img img {
+            transform: scale(1.05);
+        }
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-rl {
+            background: var(--black);
+            color: var(--white);
+        }
+        .badge-community {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        .card-body {
+            padding: 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-genre {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+        .card-dev {
+            font-size: 0.8rem;
+            color: var(--gray-dark);
+            margin-bottom: 12px;
+        }
+        .card-desc {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-light);
+        }
+        .card-platform {
+            font-size: 0.75rem;
+            color: var(--gray-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .play-btn {
+            padding: 8px 20px;
+            background: var(--black);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .play-btn:hover {
+            background: var(--accent);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--gray-dark);
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            color: var(--gray);
+        }
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--black);
+        }
+
+        /* Loading */
+        .loading-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--gray);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--white);
+            padding: 36px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-dark);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .modal-close:hover {
+            background: var(--gray-light);
+        }
+        .modal-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--accent);
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-note {
+            font-size: 0.78rem;
+            color: var(--gray-dark);
+            margin-top: 6px;
+        }
+        .form-error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        /* Auth Modal */
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            background: var(--white);
+            color: var(--gray-dark);
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .auth-tab.active {
+            background: var(--black);
+            color: var(--white);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 24px;
+            border-radius: 8px;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 4000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--accent); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .search-bar { padding: 16px 20px; }
+            .main-content { padding: 24px 20px 60px; }
+            .search-bar-inner { flex-direction: column; align-items: stretch; }
+            .search-input-wrapper { min-width: auto; }
+            .games-grid { grid-template-columns: 1fr; }
+            .submit-section { flex-direction: column; align-items: flex-start; }
+            .ad-card { flex: 0 0 280px; }
+            .carousel-arrow { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" class="nav-logo">RL<span>.</span>Software</a>
+        
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="games.html" class="active">Tutti i Giochi</a></li>
+            <li><a href="mailto:software.rl25@gmail.com">Contatti</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <div id="guestActions" style="display: flex; gap: 10px;">
+                <button class="btn btn-outline btn-sm" onclick="window.openAuthModal()">Accedi</button>
+                <button class="btn btn-primary btn-sm" onclick="window.openAuthModal(true)">Registrati</button>
+            </div>
+
+            <div id="userMenuContainer" class="user-menu-container">
+                <button class="user-avatar-btn" onclick="window.toggleDropdown()">
+                    <img src="" alt="User" id="navAvatar">
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <div class="dropdown-email" id="navEmail">...</div>
+                    </div>
+                    <a href="dashboard.html" class="dropdown-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Dashboard
+                    </a>
+                    <a href="setting.html" class="dropdown-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Impostazioni
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="window.handleLogout(event)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Esci
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <h1 class="page-title">Libreria Giochi</h1>
+            <p class="page-subtitle">Esplora i titoli RL Software e i giochi proposti dalla community.</p>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="search-bar">
+        <div class="search-bar-inner">
+            <div class="search-input-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="search-input" id="searchTitle" placeholder="Cerca per titolo..." oninput="applyFilters()">
+            </div>
+            <select class="search-select" id="searchGenre" onchange="applyFilters()">
+                <option value="">Tutti i generi</option>
+                <option value="Card Game">Card Game</option>
+                <option value="Action">Action</option>
+                <option value="Arcade">Arcade</option>
+                <option value="Puzzle">Puzzle</option>
+                <option value="Strategy">Strategy</option>
+                <option value="Platform">Platform</option>
+                <option value="RPG">RPG</option>
+                <option value="Other">Altro</option>
+            </select>
+            <select class="search-select" id="searchDeveloper" onchange="applyFilters()">
+                <option value="">Tutti gli sviluppatori</option>
+            </select>
+            <select class="search-select" id="searchSource" onchange="applyFilters()">
+                <option value="">Tutte le fonti</option>
+                <option value="rl">RL Software</option>
+                <option value="community">Community</option>
+            </select>
+            <button class="btn-clear" onclick="clearFilters()">✕ Reset</button>
+            <span class="results-count" id="resultsCount"></span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- ===== COMING SOON / ADS SECTION ===== -->
+        <div class="ads-section" id="adsSection" style="display: none;">
+            <div class="ads-section-header">
+                <h2 class="ads-section-title">
+                    Prossimamente
+                    <span class="ads-label">
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>
+                        In arrivo
+                    </span>
+                </h2>
+            </div>
+
+            <div class="ads-carousel-wrapper">
+                <button class="carousel-arrow left hidden" id="carouselLeft" onclick="scrollCarousel(-1)">‹</button>
+                <div class="ads-carousel" id="adsCarousel"></div>
+                <button class="carousel-arrow right hidden" id="carouselRight" onclick="scrollCarousel(1)">›</button>
+            </div>
+        </div>
+        <!-- ===== END ADS SECTION ===== -->
+
+        <!-- Divider (shown only when ads are visible) -->
+        <div class="section-divider" id="sectionDivider" style="display: none;">
+            <div class="section-divider-line"></div>
+            <span class="section-divider-label">Giochi disponibili</span>
+            <div class="section-divider-line"></div>
+        </div>
+
+        <div class="submit-section">
+            <p class="submit-text"><strong>Hai creato un gioco?</strong> Proponilo alla community! Sarà revisionato e pubblicato.</p>
+            <button class="btn btn-accent" onclick="window.openSubmitModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Proponi il tuo gioco
+            </button>
+        </div>
+
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <p>Caricamento giochi...</p>
+        </div>
+
+        <div class="games-grid" id="gamesGrid"></div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <h3>Nessun gioco trovato</h3>
+            <p>Prova a modificare i filtri di ricerca o proponi tu stesso un gioco!</p>
+        </div>
+    </div>
+
+    <!-- Submit Game Modal -->
+    <div class="modal-overlay" id="submitModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="window.closeSubmitModal()">&times;</button>
+            <h2 class="modal-title">Proponi il tuo gioco</h2>
+            <form id="submitForm" onsubmit="window.submitGame(event)">
+                <div class="form-group">
+                    <label class="form-label">Titolo del gioco *</label>
+                    <input type="text" id="gameTitle" class="form-input" required placeholder="Es: Space Dodger" maxlength="60">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sviluppatore / Team *</label>
+                    <input type="text" id="gameDeveloper" class="form-input" required placeholder="Il tuo nome o nome del team" maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Genere</label>
+                    <select id="gameGenre" class="form-select">
+                        <option value="Arcade">Arcade</option>
+                        <option value="Puzzle">Puzzle</option>
+                        <option value="Action">Action</option>
+                        <option value="Card Game">Card Game</option>
+                        <option value="Strategy">Strategy</option>
+                        <option value="Platform">Platform</option>
+                        <option value="RPG">RPG</option>
+                        <option value="Other">Altro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrizione *</label>
+                    <textarea id="gameDesc" class="form-textarea" required placeholder="Descrivi il gameplay in 2-3 frasi..." maxlength="300"></textarea>
+                    <div class="form-note">Max 300 caratteri. Spiega brevemente cos'è e come si gioca.</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Link al gioco *</label>
+                    <input type="url" id="gameLink" class="form-input" required placeholder="https://tuo-github.github.io/gioco">
+                    <div class="form-note">Il gioco deve essere pubblicato e giocabile online (GitHub Pages, itch.io, ecc.)</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL immagine (opzionale)</label>
+                    <input type="url" id="gameImage" class="form-input" placeholder="https://...">
+                    <div class="form-note">Consigliato: 600x400px. Se vuoto verrà generata un'immagine placeholder.</div>
+                </div>
+                <div id="submitError" class="form-error"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="submitBtn">
+                    Invia per la revisione
+                </button>
+            </form>
+            <p class="form-note" style="margin-top: 16px; text-align: center; font-size: 0.8rem;">
+                I giochi vengono revisionati manualmente prima della pubblicazione.
+            </p>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-content" style="max-width: 420px;">
+            <button class="modal-close" onclick="window.closeAuthModal()">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin" onclick="window.setAuthMode('login')">Accedi</button>
+                <button class="auth-tab" id="tabRegister" onclick="window.setAuthMode('register')">Registrati</button>
+            </div>
+            
+            <form id="authForm" onsubmit="window.handleAuth(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="authEmail" class="form-input" required placeholder="nome@esempio.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="authPassword" class="form-input" required placeholder="Minimo 6 caratteri" minlength="6">
+                </div>
+                <div id="authError" class="form-error"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;" id="authSubmitBtn">
+                    Accedi
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase + App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            where, 
+            onSnapshot, 
+            serverTimestamp,
+            getDocs,
+            doc,
+            setDoc,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyARfFWTp1rIuK4wdNSH_doRaBtCkLVzI-g",
+            authDomain: "rl-software-33e91.firebaseapp.com",
+            projectId: "rl-software-33e91",
+            storageBucket: "rl-software-33e91.firebasestorage.app",
+            messagingSenderId: "341569824532",
+            appId: "1:341569824532:web:b1ef1b101d5c652790c401"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ==================== STATE ====================
+        let currentUser = null;
+        let allGames = [];
+        let isAuthLogin = true;
+        let unsubscribeGames = null;
+        let notifiedAds = JSON.parse(localStorage.getItem('rl_notified_ads') || '[]');
+
+        // ==================== DOM REFS ====================
+        const guestActions = document.getElementById('guestActions');
+        const userMenuContainer = document.getElementById('userMenuContainer');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const navEmail = document.getElementById('navEmail');
+        const navAvatar = document.getElementById('navAvatar');
+        const gamesGrid = document.getElementById('gamesGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const resultsCount = document.getElementById('resultsCount');
+        const developerSelect = document.getElementById('searchDeveloper');
+        const adsSection = document.getElementById('adsSection');
+        const adsCarousel = document.getElementById('adsCarousel');
+        const sectionDivider = document.getElementById('sectionDivider');
+
+        // ==================== AUTH ====================
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                guestActions.style.display = 'none';
+                userMenuContainer.style.display = 'block';
+                navEmail.textContent = user.displayName || user.email;
+                navAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+            } else {
+                guestActions.style.display = 'flex';
+                userMenuContainer.style.display = 'none';
+            }
+        });
+
+        window.openAuthModal = (isRegister = false) => {
+            setAuthMode(isRegister ? 'register' : 'login');
+            document.getElementById('authModal').classList.add('active');
+            document.getElementById('authError').style.display = 'none';
+        };
+        window.closeAuthModal = () => {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authForm').reset();
+        };
+
+        window.setAuthMode = (mode) => {
+            isAuthLogin = mode === 'login';
+            document.getElementById('tabLogin').classList.toggle('active', isAuthLogin);
+            document.getElementById('tabRegister').classList.toggle('active', !isAuthLogin);
+            document.getElementById('authSubmitBtn').textContent = isAuthLogin ? 'Accedi' : 'Registrati';
+            document.getElementById('authError').style.display = 'none';
+        };
+
+        window.handleAuth = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const btn = document.getElementById('authSubmitBtn');
+            const errorEl = document.getElementById('authError');
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            errorEl.style.display = 'none';
+
+            try {
+                if (isAuthLogin) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, 'users', cred.user.uid), {
+                        email: email,
+                        role: 'user',
+                        createdAt: serverTimestamp()
+                    });
+                }
+                window.closeAuthModal();
+                showToast(isAuthLogin ? 'Bentornato!' : 'Account creato con successo!', 'success');
+            } catch (err) {
+                errorEl.textContent = getAuthErrorMessage(err.code);
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isAuthLogin ? 'Accedi' : 'Registrati';
+            }
+        };
+
+        window.handleLogout = async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            showToast('Disconnesso.', 'info');
+            dropdownMenu.classList.remove('active');
+        };
+
+        function getAuthErrorMessage(code) {
+            const map = {
+                'auth/user-not-found': 'Utente non trovato.',
+                'auth/wrong-password': 'Password errata.',
+                'auth/email-already-in-use': 'Email già registrata.',
+                'auth/weak-password': 'Minimo 6 caratteri.',
+                'auth/invalid-email': 'Email non valida.',
+                'auth/invalid-credential': 'Credenziali non valide.'
+            };
+            return map[code] || 'Errore sconosciuto. Riprova.';
+        }
+
+        window.toggleDropdown = () => {
+            dropdownMenu.classList.toggle('active');
+        };
+        document.addEventListener('click', (e) => {
+            if (!userMenuContainer.contains(e.target)) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+
+        // ==================== ADS / COMING SOON ====================
+        /**
+         * Struttura documento Firestore nella collection "ads":
+         * {
+         *   title: string,           // Nome del gioco in arrivo
+         *   developer: string,       // Sviluppatore
+         *   genre: string,           // Genere
+         *   description: string,     // Descrizione breve
+         *   imageUrl: string,        // URL immagine copertina (opzionale)
+         *   releaseDate: string,     // Data uscita es. "Estate 2025" o "2025-12-01" (opzionale)
+         *   tags: string[],          // Es. ["Multiplayer", "Browser", "Gratis"] (opzionale)
+         *   active: boolean,         // true = visibile agli utenti
+         *   order: number,           // Ordine di visualizzazione (più basso = prima)
+         *   createdAt: Timestamp
+         * }
+         */
+        function loadAds() {
+            const q = query(
+                collection(db, 'ads'),
+                where('active', '==', true)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                const ads = snapshot.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+
+                renderAds(ads);
+            }, (err) => {
+                console.error('Ads load error:', err);
+            });
+        }
+
+        function renderAds(ads) {
+            adsCarousel.innerHTML = '';
+
+            if (ads.length === 0) {
+                adsSection.style.display = 'none';
+                sectionDivider.style.display = 'none';
+                return;
+            }
+
+            adsSection.style.display = 'block';
+            sectionDivider.style.display = 'flex';
+
+            ads.forEach(ad => {
+                const card = document.createElement('div');
+                card.className = 'ad-card';
+
+                const imageUrl = ad.imageUrl || `https://placehold.co/600x400/1e1e2e/f59e0b?text=${encodeURIComponent(ad.title || 'Coming Soon')}`;
+                const isNotified = notifiedAds.includes(ad.id);
+
+                const tagsHtml = (ad.tags && ad.tags.length > 0)
+                    ? ad.tags.map(t => `<span class="ad-tag">${escapeHtml(t)}</span>`).join('')
+                    : '';
+
+                let releaseDateHtml = '';
+                if (ad.releaseDate) {
+                    releaseDateHtml = `
+                        <div class="ad-release-date">
+                            <span class="ad-release-label">Uscita prevista</span>
+                            <span class="ad-release-value">${escapeHtml(ad.releaseDate)}</span>
+                        </div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="ad-card-img">
+                        <img src="${imageUrl}" alt="${escapeHtml(ad.title)}" loading="lazy"
+                             onerror="this.src='https://placehold.co/600x400/1e1e2e/f59e0b?text=${encodeURIComponent(ad.title)}'">
+                        <span class="ad-badge-cs">
+                            🕐 Coming Soon
+                        </span>
+                        ${releaseDateHtml}
+                    </div>
+                    <div class="ad-card-body">
+                        ${ad.genre ? `<div class="ad-card-genre">${escapeHtml(ad.genre)}</div>` : ''}
+                        <h3 class="ad-card-title">${escapeHtml(ad.title)}</h3>
+                        ${ad.developer ? `<div class="ad-card-dev">di ${escapeHtml(ad.developer)}</div>` : ''}
+                        ${ad.description ? `<p class="ad-card-desc">${escapeHtml(ad.description)}</p>` : ''}
+                        <div class="ad-card-footer">
+                            ${tagsHtml ? `<div class="ad-card-tags">${tagsHtml}</div>` : '<div></div>'}
+                            <button class="ad-notify-btn ${isNotified ? 'notified' : ''}"
+                                    onclick="window.toggleNotify('${ad.id}', this)"
+                                    ${isNotified ? 'disabled' : ''}>
+                                ${isNotified
+                                    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Avvisami`
+                                    : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Avvisami`
+                                }
+                            </button>
+                        </div>
+                    </div>
+                `;
+                adsCarousel.appendChild(card);
+            });
+
+            updateCarouselArrows();
+        }
+
+        // Pulsante "Avvisami" — salva in localStorage (lato client)
+        window.toggleNotify = (adId, btn) => {
+            if (notifiedAds.includes(adId)) return;
+            notifiedAds.push(adId);
+            localStorage.setItem('rl_notified_ads', JSON.stringify(notifiedAds));
+            btn.disabled = true;
+            btn.classList.add('notified');
+            btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Avvisami`;
+            showToast('Ti avviseremo all\'uscita! 🔔', 'success');
+        };
+
+        // ==================== CAROUSEL ====================
+        function updateCarouselArrows() {
+            const el = adsCarousel;
+            const leftBtn = document.getElementById('carouselLeft');
+            const rightBtn = document.getElementById('carouselRight');
+            if (!leftBtn || !rightBtn) return;
+
+            const canScrollLeft = el.scrollLeft > 10;
+            const canScrollRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 10;
+
+            leftBtn.classList.toggle('hidden', !canScrollLeft);
+            rightBtn.classList.toggle('hidden', !canScrollRight);
+        }
+
+        window.scrollCarousel = (dir) => {
+            adsCarousel.scrollBy({ left: dir * 360, behavior: 'smooth' });
+            setTimeout(updateCarouselArrows, 400);
+        };
+
+        adsCarousel.addEventListener('scroll', updateCarouselArrows);
+
+        // ==================== GAMES / FIRESTORE ====================
+        async function seedDefaultGames() {
+            const snapshot = await getDocs(collection(db, 'games'));
+            if (snapshot.empty) {
+                const defaultGames = [
+                    {
+                        title: 'Super Scopa',
+                        developer: 'RL Software',
+                        genre: 'Card Game',
+                        description: 'Il classico gioco di carte italiano rivisitato in chiave moderna. Grafica pulita, gameplay fluido e sfide avvincenti contro l\'IA o amici.',
+                        link: 'https://l2010pro-rl.github.io/scopa-card',
+                        imageUrl: '',
+                        isOfficial: true,
+                        status: 'approved',
+                        createdAt: serverTimestamp()
+                    },
+                    {
+                        title: 'Neon Arena',
+                        developer: 'RL Software',
+                        genre: 'Action',
+                        description: 'Un\'arena frenetica piena di laser, nemici e potenza di fuoco. Sopravvivi alle ondate nemiche e conquista il punteggio più alto in questo shooter retrò.',
+                        link: 'https://l2010pro-rl.github.io/laser-arena',
+                        imageUrl: '',
+                        isOfficial: true,
+                        status: 'approved',
+                        createdAt: serverTimestamp()
+                    }
+                ];
+                for (const game of defaultGames) {
+                    await addDoc(collection(db, 'games'), game);
+                }
+            }
+        }
+
+        function loadGames() {
+            if (unsubscribeGames) unsubscribeGames();
+
+            const q = query(collection(db, 'games'), where('status', '==', 'approved'));
+            
+            unsubscribeGames = onSnapshot(q, (snapshot) => {
+                loadingState.style.display = 'none';
+                allGames = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                
+                allGames.sort((a, b) => {
+                    if (a.isOfficial && !b.isOfficial) return -1;
+                    if (!a.isOfficial && b.isOfficial) return 1;
+                    return a.title.localeCompare(b.title);
+                });
+
+                updateDeveloperFilter();
+                applyFilters();
+            }, (error) => {
+                console.error('Firestore error:', error);
+                loadingState.innerHTML = `<p style="color: var(--danger);">Errore nel caricamento: ${error.message}</p>`;
+            });
+        }
+
+        function updateDeveloperFilter() {
+            const developers = [...new Set(allGames.map(g => g.developer))].sort();
+            const currentVal = developerSelect.value;
+            developerSelect.innerHTML = '<option value="">Tutti gli sviluppatori</option>';
+            developers.forEach(dev => {
+                const opt = document.createElement('option');
+                opt.value = dev;
+                opt.textContent = dev;
+                developerSelect.appendChild(opt);
+            });
+            developerSelect.value = currentVal;
+        }
+
+        // ==================== SEARCH & FILTERS ====================
+        window.applyFilters = () => {
+            const titleQuery = document.getElementById('searchTitle').value.toLowerCase().trim();
+            const genreQuery = document.getElementById('searchGenre').value;
+            const devQuery = document.getElementById('searchDeveloper').value;
+            const sourceQuery = document.getElementById('searchSource').value;
+
+            let filtered = allGames.filter(game => {
+                if (titleQuery && !game.title.toLowerCase().includes(titleQuery)) return false;
+                if (genreQuery && game.genre !== genreQuery) return false;
+                if (devQuery && game.developer !== devQuery) return false;
+                if (sourceQuery === 'rl' && !game.isOfficial) return false;
+                if (sourceQuery === 'community' && game.isOfficial) return false;
+                return true;
+            });
+
+            renderGames(filtered);
+        };
+
+        window.clearFilters = () => {
+            document.getElementById('searchTitle').value = '';
+            document.getElementById('searchGenre').value = '';
+            document.getElementById('searchDeveloper').value = '';
+            document.getElementById('searchSource').value = '';
+            applyFilters();
+        };
+
+        function renderGames(games) {
+            gamesGrid.innerHTML = '';
+            resultsCount.textContent = `${games.length} gioco${games.length !== 1 ? 'chi' : ''}`;
+
+            if (games.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            emptyState.style.display = 'none';
+
+            games.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                
+                const imageUrl = game.imageUrl || `https://placehold.co/600x400/e4e4e7/71717a?text=${encodeURIComponent(game.title)}`;
+                
+                card.innerHTML = `
+                    <div class="card-img">
+                        <img src="${imageUrl}" alt="${game.title}" loading="lazy" onerror="this.src='https://placehold.co/600x400/e4e4e7/71717a?text=${encodeURIComponent(game.title)}'">
+                        <span class="card-badge ${game.isOfficial ? 'badge-rl' : 'badge-community'}">
+                            ${game.isOfficial ? '⭐ RL Software' : '🎮 Community'}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-genre">${game.genre}</div>
+                        <h3 class="card-title">${escapeHtml(game.title)}</h3>
+                        <div class="card-dev">di ${escapeHtml(game.developer)}</div>
+                        <p class="card-desc">${escapeHtml(game.description)}</p>
+                        <div class="card-footer">
+                            <span class="card-platform">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                Web Browser
+                            </span>
+                            <a href="${escapeHtml(game.link)}" target="_blank" rel="noopener noreferrer" class="play-btn">Gioca ↗</a>
+                        </div>
+                    </div>
+                `;
+                gamesGrid.appendChild(card);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== SUBMIT GAME ====================
+        window.openSubmitModal = () => {
+            if (!currentUser) {
+                showToast('Devi accedere per proporre un gioco.', 'info');
+                window.openAuthModal();
+                return;
+            }
+            document.getElementById('submitModal').classList.add('active');
+            document.getElementById('submitError').style.display = 'none';
+        };
+        window.closeSubmitModal = () => {
+            document.getElementById('submitModal').classList.remove('active');
+            document.getElementById('submitForm').reset();
+        };
+
+        window.submitGame = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errorEl = document.getElementById('submitError');
+
+            const data = {
+                title: document.getElementById('gameTitle').value.trim(),
+                developer: document.getElementById('gameDeveloper').value.trim(),
+                genre: document.getElementById('gameGenre').value,
+                description: document.getElementById('gameDesc').value.trim(),
+                link: document.getElementById('gameLink').value.trim(),
+                imageUrl: document.getElementById('gameImage').value.trim() || null
+            };
+
+            if (data.description.length < 10) {
+                errorEl.textContent = 'La descrizione deve essere di almeno 10 caratteri.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Invio in corso...';
+            errorEl.style.display = 'none';
+
+            try {
+                await addDoc(collection(db, 'games'), {
+                    ...data,
+                    isOfficial: false,
+                    status: 'pending',
+                    submittedBy: currentUser.uid,
+                    submittedByEmail: currentUser.email,
+                    submittedAt: serverTimestamp()
+                });
+
+                showToast('Gioco inviato! Sarà revisionato a breve.', 'success');
+                window.closeSubmitModal();
+            } catch (err) {
+                console.error('Submit error:', err);
+                errorEl.textContent = 'Errore nell\'invio. Riprova.';
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Invia per la revisione';
+            }
+        };
+
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // ==================== TOAST ====================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3500);
+        }
+        window.showToast = showToast;
+
+        // ==================== INIT ====================
+        loadAds();
+        seedDefaultGames().then(() => {
+            loadGames();
+        });
+    </script>
+</body>
+</html>

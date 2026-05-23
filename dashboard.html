@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — RL Software</title>
+    
+    <!-- Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/400.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/700.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.0/700.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray-light: #f4f4f5;
+            --gray: #e4e4e7;
+            --gray-dark: #71717a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--gray-light); color: var(--black); min-height: 100vh; }
+
+        /* Layout */
+        .layout { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--white); border-right: 1px solid var(--gray);
+            padding: 32px 24px; display: flex; flex-direction: column; position: fixed; height: 100%; z-index: 100;
+        }
+        .brand { font-family: 'Space Grotesk'; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
+        .brand span { color: var(--accent); }
+        .brand-sub { font-size: 0.75rem; color: var(--gray-dark); margin-bottom: 40px; }
+
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }
+        .nav-item a {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+            text-decoration: none; color: var(--gray-dark); border-radius: 8px; font-size: 0.9rem;
+            font-weight: 500; transition: all 0.2s;
+        }
+        .nav-item a:hover { background: var(--gray-light); color: var(--black); }
+        .nav-item.active a { background: var(--black); color: var(--white); }
+        .nav-badge {
+            background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 8px;
+            border-radius: 100px; margin-left: auto; font-weight: 700;
+        }
+
+        .sidebar-footer {
+            margin-top: auto; padding-top: 24px; border-top: 1px solid var(--gray);
+        }
+        .user-mini { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .user-mini img { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-light); }
+        .user-mini-email { font-size: 0.85rem; font-weight: 600; }
+        .user-mini-role { font-size: 0.75rem; color: var(--gray-dark); }
+        .logout-link { font-size: 0.8rem; color: var(--danger); cursor: pointer; display: inline-block; text-decoration: none; }
+        .logout-link:hover { text-decoration: underline; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; flex-grow: 1; padding: 40px 48px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-title { font-family: 'Space Grotesk'; font-size: 1.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+        .page-subtitle { color: var(--gray-dark); font-size: 0.95rem; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
+        .stat-card {
+            background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid var(--gray);
+        }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-dark); margin-bottom: 8px; font-weight: 600; }
+        .stat-value { font-family: 'Space Grotesk'; font-size: 2rem; font-weight: 700; }
+        .stat-value.blue { color: var(--accent); }
+        .stat-value.green { color: var(--success); }
+        .stat-value.orange { color: var(--warning); }
+        .stat-value.red { color: var(--danger); }
+
+        /* Tabs */
+        .tabs-container { margin-bottom: 24px; }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--gray); }
+        .tab {
+            padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            border: none; background: transparent; color: var(--gray-dark); position: relative;
+            transition: color 0.2s; font-family: 'Inter', sans-serif;
+        }
+        .tab:hover { color: var(--black); }
+        .tab.active { color: var(--accent); }
+        .tab.active::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 2px; background: var(--accent);
+        }
+        .tab-count {
+            background: var(--gray-light); padding: 2px 8px; border-radius: 100px;
+            font-size: 0.75rem; margin-left: 6px;
+        }
+        .tab.active .tab-count { background: var(--accent); color: white; }
+
+        /* Table */
+        .table-container {
+            background: var(--white); border-radius: 12px; border: 1px solid var(--gray); overflow: hidden;
+        }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 24px; border-bottom: 1px solid var(--gray-light);
+        }
+        .table-title { font-weight: 700; font-size: 1.05rem; }
+        .table-actions { display: flex; gap: 10px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: var(--gray-light); padding: 12px 20px; font-size: 0.72rem; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--gray-dark); font-weight: 700; text-align: left;
+        }
+        td { padding: 16px 20px; border-bottom: 1px solid var(--gray-light); font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+
+        .game-cell { display: flex; align-items: center; gap: 14px; }
+        .game-thumb {
+            width: 48px; height: 36px; border-radius: 6px; background: var(--gray-light);
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .game-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .game-name { font-weight: 600; }
+        .game-dev-sub { font-size: 0.78rem; color: var(--gray-dark); }
+
+        .status-badge {
+            padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-rl { background: var(--black); color: white; }
+
+        .action-btns { display: flex; gap: 6px; }
+        .btn-icon {
+            width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--gray);
+            background: var(--white); cursor: pointer; display: flex; align-items: center;
+            justify-content: center; transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-icon:hover { background: var(--gray-light); }
+        .btn-icon.approve:hover { background: #dcfce7; border-color: var(--success); color: var(--success); }
+        .btn-icon.reject:hover { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+        .btn-icon.delete:hover { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+
+        .btn {
+            padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; border: none; font-family: 'Inter', sans-serif;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-primary { background: var(--black); color: var(--white); }
+        .btn-primary:hover { background: var(--accent); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:hover { background: #16a34a; }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-ghost { background: transparent; color: var(--gray-dark); border: 1px solid var(--gray); }
+        .btn-ghost:hover { border-color: var(--black); color: var(--black); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--white); padding: 36px; border-radius: 16px; width: 100%; max-width: 560px;
+            max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.15); position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; background: none; border: none;
+            font-size: 1.5rem; cursor: pointer; color: var(--gray-dark); width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;
+        }
+        .modal-close:hover { background: var(--gray-light); }
+        .modal-title {
+            font-family: 'Space Grotesk'; font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px;
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: #555; }
+        .form-input, .form-textarea, .form-select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--gray); border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+        .form-textarea { min-height: 80px; resize: vertical; }
+        .form-note { font-size: 0.75rem; color: var(--gray-dark); margin-top: 4px; }
+        .form-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; border-radius: 8px;
+            color: var(--white); font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 4000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--accent); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-dark); }
+        .empty-state svg { width: 56px; height: 56px; margin-bottom: 12px; color: var(--gray); }
+        .empty-state h4 { font-size: 1rem; color: var(--black); margin-bottom: 4px; }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed; inset: 0; background: var(--gray-light); display: flex;
+            align-items: center; justify-content: center; z-index: 500;
+        }
+        .spinner {
+            width: 36px; height: 36px; border: 3px solid var(--gray); border-top: 3px solid var(--accent);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 24px 20px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .table-container { overflow-x: auto; }
+            table { min-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <p style="color: var(--gray-dark); font-size: 0.9rem;">Verifica accesso...</p>
+        </div>
+    </div>
+
+    <div class="layout" id="dashboardLayout" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand">RL<span>.</span>Software</div>
+                <div class="brand-sub">Dashboard Admin</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active"><a href="#" data-tab="games" onclick="switchTab('games')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Giochi
+                </a></li>
+                <li class="nav-item"><a href="#" data-tab="pending" onclick="switchTab('pending')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    In Attesa
+                    <span class="nav-badge" id="pendingBadge" style="display: none;">0</span>
+                </a></li>
+                <li class="nav-item"><a href="setting.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Impostazioni
+                </a></li>
+                <li class="nav-item"><a href="index.html">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Torna al Sito
+                </a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-mini">
+                    <img src="" alt="User" id="sidebarAvatar">
+                    <div>
+                        <div class="user-mini-email" id="sidebarEmail">...</div>
+                        <div class="user-mini-role" id="sidebarRole">...</div>
+                    </div>
+                </div>
+                <a class="logout-link" onclick="handleLogout()">Esci</a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Gestione Giochi</h1>
+                <p class="page-subtitle">Aggiungi, modifica e approva i giochi della piattaforma.</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Totale Giochi</div>
+                    <div class="stat-value blue" id="statTotal">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Approvati</div>
+                    <div class="stat-value green" id="statApproved">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">In Attesa</div>
+                    <div class="stat-value orange" id="statPending">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">RL Software</div>
+                    <div class="stat-value" id="statRL" style="color: var(--black);">0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab-tab="all" onclick="switchContentTab('all')">
+                        Tutti <span class="tab-count" id="countAll">0</span>
+                    </button>
+                    <button class="tab" data-tab-tab="rl" onclick="switchContentTab('rl')">
+                        RL Software <span class="tab-count" id="countRL">0</span>
+                    </button>
+                    <button class="tab" data-tab-tab="community" onclick="switchContentTab('community')">
+                        Community <span class="tab-count" id="countCommunity">0</span>
+                    </button>
+                    <button class="tab" data-tab-tab="pending" onclick="switchContentTab('pending')">
+                        In Attesa <span class="tab-count" id="countPending">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Games Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title" id="tableTitle">Tutti i giochi</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openAddGameModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Aggiungi Gioco
+                        </button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Gioco</th>
+                                <th>Genere</th>
+                                <th>Fonte</th>
+                                <th>Stato</th>
+                                <th>Data</th>
+                                <th style="width: 140px;">Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gamesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyTable" class="empty-state" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                    <h4>Nessun gioco trovato</h4>
+                    <p>Aggiungi un nuovo gioco o modifica i filtri.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Game Modal -->
+    <div class="modal-overlay" id="gameModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeGameModal()">&times;</button>
+            <h2 class="modal-title" id="gameModalTitle">Aggiungi Gioco</h2>
+            <form id="gameForm" onsubmit="saveGame(event)">
+                <input type="hidden" id="gameDocId">
+                <div class="form-group">
+                    <label class="form-label">Titolo *</label>
+                    <input type="text" id="inputGameTitle" class="form-input" required maxlength="60" placeholder="Es: Super Scopa">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Sviluppatore *</label>
+                        <input type="text" id="inputGameDev" class="form-input" required maxlength="40" placeholder="Nome o team">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Genere</label>
+                        <select id="inputGameGenre" class="form-select">
+                            <option value="Card Game">Card Game</option>
+                            <option value="Action">Action</option>
+                            <option value="Arcade">Arcade</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Strategy">Strategy</option>
+                            <option value="Platform">Platform</option>
+                            <option value="RPG">RPG</option>
+                            <option value="Other">Altro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrizione *</label>
+                    <textarea id="inputGameDesc" class="form-textarea" required maxlength="300" placeholder="Descrivi il gioco..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Link al gioco *</label>
+                        <input type="url" id="inputGameLink" class="form-input" required placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Immagine URL (opzionale)</label>
+                        <input type="url" id="inputGameImage" class="form-input" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fonte</label>
+                        <select id="inputGameSource" class="form-select">
+                            <option value="rl">RL Software</option>
+                            <option value="community">Community</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stato</label>
+                        <select id="inputGameStatus" class="form-select">
+                            <option value="approved">Approvato</option>
+                            <option value="pending">In Attesa</option>
+                            <option value="rejected">Rifiutato</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="gameFormError" class="form-error"></div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-ghost" onclick="closeGameModal()">Annulla</button>
+                    <button type="submit" class="btn btn-primary" id="gameSaveBtn">Salva Gioco</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal-overlay" id="rejectModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <button class="modal-close" onclick="document.getElementById('rejectModal').classList.remove('active')">&times;</button>
+            <h2 class="modal-title">Motivo del rifiuto</h2>
+            <form onsubmit="confirmReject(event)">
+                <input type="hidden" id="rejectDocId">
+                <div class="form-group">
+                    <label class="form-label">Motivo (opzionale)</label>
+                    <textarea id="rejectReason" class="form-textarea" placeholder="Specifica il motivo del rifiuto..." maxlength="200"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('rejectModal').classList.remove('active')">Annulla</button>
+                    <button type="submit" class="btn btn-danger">Rifiuta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="modal-close" onclick="document.getElementById('deleteModal').classList.remove('active')">&times;</button>
+            <h2 class="modal-title">Elimina Gioco</h2>
+            <p style="color: var(--gray-dark); margin-bottom: 24px;">Sei sicuro di voler eliminare questo gioco? L'azione è irreversibile.</p>
+            <p style="font-weight: 700; margin-bottom: 24px;" id="deleteGameName"></p>
+            <input type="hidden" id="deleteDocId">
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-ghost" onclick="document.getElementById('deleteModal').classList.remove('active')">Annulla</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Elimina</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase + Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, 
+            query, onSnapshot, serverTimestamp, getDoc, setDoc 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARfFWTp1rIuK4wdNSH_doRaBtCkLVzI-g",
+            authDomain: "rl-software-33e91.firebaseapp.com",
+            projectId: "rl-software-33e91",
+            storageBucket: "rl-software-33e91.firebasestorage.app",
+            messagingSenderId: "341569824532",
+            appId: "1:341569824532:web:b1ef1b101d5c652790c401"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allGames = [];
+        let currentContentTab = 'all';
+        let unsubscribeGames = null;
+
+        // DOM
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const dashboardLayout = document.getElementById('dashboardLayout');
+        const sidebarEmail = document.getElementById('sidebarEmail');
+        const sidebarRole = document.getElementById('sidebarRole');
+        const sidebarAvatar = document.getElementById('sidebarAvatar');
+        const gamesTableBody = document.getElementById('gamesTableBody');
+        const emptyTable = document.getElementById('emptyTable');
+
+        // Auth + Role Check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
+
+            // Check admin role
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let role = 'user';
+            let email = user.email;
+
+            if (userDoc.exists()) {
+                role = userDoc.data().role || 'user';
+            }
+
+            // If first admin, set role
+            if (role === 'user') {
+                // Check if any admin exists
+                // For simplicity, we auto-promote the first user
+                const usersSnapshot = await getDoc(doc(db, 'users', user.uid));
+                if (!usersSnapshot.exists()) {
+                    await setDoc(doc(db, 'users', user.uid), {
+                        email: user.email,
+                        role: 'admin',
+                        createdAt: serverTimestamp()
+                    });
+                    role = 'admin';
+                }
+            }
+
+            sidebarEmail.textContent = email;
+            sidebarRole.textContent = role === 'admin' ? 'Amministratore' : 'Utente';
+            sidebarAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
+
+            if (role !== 'admin') {
+                // Non-admin: redirect to games page
+                showToast('Accesso riservato agli amministratori.', 'error');
+                setTimeout(() => window.location.href = 'games.html', 2000);
+                return;
+            }
+
+            loadingOverlay.style.display = 'none';
+            dashboardLayout.style.display = 'flex';
+
+            loadGames();
+        });
+
+        // Load all games (real-time)
+        function loadGames() {
+            if (unsubscribeGames) unsubscribeGames();
+
+            const q = query(collection(db, 'games'));
+            unsubscribeGames = onSnapshot(q, (snapshot) => {
+                allGames = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                updateStats();
+                renderTable();
+            }, (error) => {
+                console.error('Firestore error:', error);
+            });
+        }
+
+        function updateStats() {
+            const total = allGames.length;
+            const approved = allGames.filter(g => g.status === 'approved').length;
+            const pending = allGames.filter(g => g.status === 'pending').length;
+            const rl = allGames.filter(g => g.isOfficial === true).length;
+            const community = allGames.filter(g => g.isOfficial === false && g.status === 'approved').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statRL').textContent = rl;
+
+            document.getElementById('countAll').textContent = total;
+            document.getElementById('countRL').textContent = rl;
+            document.getElementById('countCommunity').textContent = community;
+            document.getElementById('countPending').textContent = pending;
+
+            // Badge
+            const badge = document.getElementById('pendingBadge');
+            if (pending > 0) {
+                badge.textContent = pending;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function getFilteredGames() {
+            switch (currentContentTab) {
+                case 'rl': return allGames.filter(g => g.isOfficial === true);
+                case 'community': return allGames.filter(g => g.isOfficial === false && g.status === 'approved');
+                case 'pending': return allGames.filter(g => g.status === 'pending');
+                default: return allGames;
+            }
+        }
+
+        function renderTable() {
+            const games = getFilteredGames();
+            gamesTableBody.innerHTML = '';
+
+            if (games.length === 0) {
+                emptyTable.style.display = 'block';
+                return;
+            }
+            emptyTable.style.display = 'none';
+
+            // Sort: pending first, then by title
+            games.sort((a, b) => {
+                if (a.status === 'pending' && b.status !== 'pending') return -1;
+                if (a.status !== 'pending' && b.status === 'pending') return 1;
+                return (a.title || '').localeCompare(b.title || '');
+            });
+
+            const genreIcons = {
+                'Card Game': '🃏', 'Action': '⚔️', 'Arcade': '🕹️', 
+                'Puzzle': '🧩', 'Strategy': '♟️', 'Platform': '🏃', 
+                'RPG': '⚔️', 'Other': '🎮'
+            };
+
+            games.forEach(game => {
+                const tr = document.createElement('tr');
+                const icon = genreIcons[game.genre] || '🎮';
+                const thumbContent = game.imageUrl 
+                    ? `<img src="${escapeHtml(game.imageUrl)}" alt="" onerror="this.parentElement.textContent='${icon}'">` 
+                    : icon;
+
+                let statusHtml = '';
+                if (game.status === 'approved') {
+                    statusHtml = game.isOfficial 
+                        ? `<span class="status-badge status-rl">⭐ RL</span>` 
+                        : `<span class="status-badge status-approved">✓ Approvato</span>`;
+                } else if (game.status === 'pending') {
+                    statusHtml = `<span class="status-badge status-pending">⏳ In Attesa</span>`;
+                } else {
+                    statusHtml = `<span class="status-badge status-rejected">✕ Rifiutato</span>`;
+                }
+
+                const dateStr = game.createdAt ? new Date(game.createdAt.toDate()).toLocaleDateString('it-IT') : '—';
+                const sourceLabel = game.isOfficial ? 'RL Software' : (game.developer || 'Community');
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="game-cell">
+                            <div class="game-thumb">${thumbContent}</div>
+                            <div>
+                                <div class="game-name">${escapeHtml(game.title)}</div>
+                                <div class="game-dev-sub">${escapeHtml(game.developer || '—')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${escapeHtml(game.genre || '—')}</td>
+                    <td style="font-size: 0.85rem;">${escapeHtml(sourceLabel)}</td>
+                    <td>${statusHtml}</td>
+                    <td style="font-size: 0.85rem; color: var(--gray-dark);">${dateStr}</td>
+                    <td>
+                        <div class="action-btns">
+                            ${game.status === 'pending' ? `
+                                <button class="btn-icon approve" title="Approva" onclick="approveGame('${game.id}')">✓</button>
+                                <button class="btn-icon reject" title="Rifiuta" onclick="openRejectModal('${game.id}')">✕</button>
+                            ` : ''}
+                            <button class="btn-icon" title="Modifica" onclick="openEditGameModal('${game.id}')">✎</button>
+                            <button class="btn-icon delete" title="Elimina" onclick="openDeleteModal('${game.id}', '${escapeHtml(game.title)}')">🗑</button>
+                        </div>
+                    </td>
+                `;
+                gamesTableBody.appendChild(tr);
+            });
+        }
+
+        // ==================== CONTENT TABS ====================
+        window.switchContentTab = (tab) => {
+            currentContentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab-tab="${tab}"]`).classList.add('active');
+
+            const titles = {
+                all: 'Tutti i giochi',
+                rl: 'Giochi RL Software',
+                community: 'Giochi Community',
+                pending: 'Giochi in Attesa'
+            };
+            document.getElementById('tableTitle').textContent = titles[tab] || 'Giochi';
+            renderTable();
+        };
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
+            if (tab === 'pending') {
+                switchContentTab('pending');
+            } else {
+                switchContentTab('all');
+            }
+        };
+
+        // ==================== ADD / EDIT GAME ====================
+        window.openAddGameModal = () => {
+            document.getElementById('gameModalTitle').textContent = 'Aggiungi Gioco';
+            document.getElementById('gameSaveBtn').textContent = 'Aggiungi';
+            document.getElementById('gameDocId').value = '';
+            document.getElementById('gameForm').reset();
+            document.getElementById('inputGameSource').value = 'rl';
+            document.getElementById('inputGameStatus').value = 'approved';
+            document.getElementById('gameFormError').style.display = 'none';
+            document.getElementById('gameModal').classList.add('active');
+        };
+
+        window.openEditGameModal = (docId) => {
+            const game = allGames.find(g => g.id === docId);
+            if (!game) return;
+
+            document.getElementById('gameModalTitle').textContent = 'Modifica Gioco';
+            document.getElementById('gameSaveBtn').textContent = 'Salva Modifiche';
+            document.getElementById('gameDocId').value = docId;
+            document.getElementById('inputGameTitle').value = game.title || '';
+            document.getElementById('inputGameDev').value = game.developer || '';
+            document.getElementById('inputGameGenre').value = game.genre || 'Other';
+            document.getElementById('inputGameDesc').value = game.description || '';
+            document.getElementById('inputGameLink').value = game.link || '';
+            document.getElementById('inputGameImage').value = game.imageUrl || '';
+            document.getElementById('inputGameSource').value = game.isOfficial ? 'rl' : 'community';
+            document.getElementById('inputGameStatus').value = game.status || 'approved';
+            document.getElementById('gameFormError').style.display = 'none';
+            document.getElementById('gameModal').classList.add('active');
+        };
+
+        window.closeGameModal = () => {
+            document.getElementById('gameModal').classList.remove('active');
+            document.getElementById('gameForm').reset();
+        };
+
+        window.saveGame = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('gameSaveBtn');
+            const errorEl = document.getElementById('gameFormError');
+            const docId = document.getElementById('gameDocId').value;
+
+            const data = {
+                title: document.getElementById('inputGameTitle').value.trim(),
+                developer: document.getElementById('inputGameDev').value.trim(),
+                genre: document.getElementById('inputGameGenre').value,
+                description: document.getElementById('inputGameDesc').value.trim(),
+                link: document.getElementById('inputGameLink').value.trim(),
+                imageUrl: document.getElementById('inputGameImage').value.trim() || null,
+                isOfficial: document.getElementById('inputGameSource').value === 'rl',
+                status: document.getElementById('inputGameStatus').value,
+                updatedAt: serverTimestamp()
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Salvataggio...';
+            errorEl.style.display = 'none';
+
+            try {
+                if (docId) {
+                    await updateDoc(doc(db, 'games', docId), data);
+                    showToast('Gioco aggiornato!', 'success');
+                } else {
+                    data.createdAt = serverTimestamp();
+                    await addDoc(collection(db, 'games'), data);
+                    showToast('Gioco aggiunto!', 'success');
+                }
+                closeGameModal();
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = 'Errore nel salvataggio.';
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = docId ? 'Salva Modifiche' : 'Aggiungi Gioco';
+            }
+        };
+
+        // ==================== APPROVE / REJECT ====================
+        window.approveGame = async (docId) => {
+            try {
+                await updateDoc(doc(db, 'games', docId), {
+                    status: 'approved',
+                    approvedAt: serverTimestamp()
+                });
+                showToast('Gioco approvato!', 'success');
+            } catch (err) {
+                showToast('Errore nell\'approvazione.', 'error');
+            }
+        };
+
+        window.openRejectModal = (docId) => {
+            document.getElementById('rejectDocId').value = docId;
+            document.getElementById('rejectReason').value = '';
+            document.getElementById('rejectModal').classList.add('active');
+        };
+
+        window.confirmReject = async (e) => {
+            e.preventDefault();
+            const docId = document.getElementById('rejectDocId').value;
+            try {
+                await updateDoc(doc(db, 'games', docId), {
+                    status: 'rejected',
+                    rejectReason: document.getElementById('rejectReason').value.trim(),
+                    rejectedAt: serverTimestamp()
+                });
+                showToast('Gioco rifiutato.', 'info');
+                document.getElementById('rejectModal').classList.remove('active');
+            } catch (err) {
+                showToast('Errore nel rifiuto.', 'error');
+            }
+        };
+
+        // ==================== DELETE ====================
+        window.openDeleteModal = (docId, title) => {
+            document.getElementById('deleteDocId').value = docId;
+            document.getElementById('deleteGameName').textContent = `"${title}"`;
+            document.getElementById('deleteModal').classList.add('active');
+        };
+
+        window.confirmDelete = async () => {
+            const docId = document.getElementById('deleteDocId').value;
+            try {
+                await deleteDoc(doc(db, 'games', docId));
+                showToast('Gioco eliminato.', 'info');
+                document.getElementById('deleteModal').classList.remove('active');
+            } catch (err) {
+                showToast('Errore nell\'eliminazione.', 'error');
+            }
+        };
+
+        // ==================== LOGOUT ====================
+        window.handleLogout = () => {
+            signOut(auth).then(() => window.location.href = 'index.html');
+        };
+
+        // ==================== UTILS ====================
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => { toast.className = 'toast'; }, 3500);
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
+

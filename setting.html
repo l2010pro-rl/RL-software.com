@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostazioni — RL Software</title>
+    
+    <!-- Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/400.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/700.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.0/700.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray-light: #f4f4f5;
+            --gray: #e4e4e7;
+            --gray-dark: #71717a;
+            --accent: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--gray-light); color: var(--black); min-height: 100vh; }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--white); border-right: 1px solid var(--gray);
+            padding: 32px 24px; display: flex; flex-direction: column; position: fixed; height: 100%; z-index: 10;
+        }
+        .brand { font-family: 'Space Grotesk'; font-size: 1.5rem; font-weight: 700; margin-bottom: 40px; letter-spacing: -1px; }
+        .brand span { color: var(--accent); }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .nav-item a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            text-decoration: none; color: var(--gray-dark); border-radius: 8px; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-item a:hover { background: var(--gray-light); color: var(--black); }
+        .nav-item.active a { background: var(--black); color: var(--white); }
+        
+        .user-mini { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--gray); display: flex; align-items: center; gap: 12px; }
+        .user-mini img { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-light); }
+        .user-mini-info { overflow: hidden; }
+        .user-mini-email { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .logout-link { font-size: 0.75rem; color: var(--danger); cursor: pointer; margin-top: 4px; display: inline-block; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; flex-grow: 1; padding: 40px 60px; max-width: 1000px; }
+
+        .header-title { font-family: 'Space Grotesk'; font-size: 2rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -1px; }
+        .header-subtitle { color: var(--gray-dark); margin-bottom: 40px; }
+
+        /* Settings Sections */
+        .settings-card {
+            background: var(--white); border-radius: 12px; border: 1px solid var(--gray);
+            padding: 32px; margin-bottom: 32px;
+        }
+        .settings-card h3 {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-light);
+        }
+
+        .form-row { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
+        .form-label { width: 150px; font-weight: 600; font-size: 0.9rem; }
+        .form-input {
+            flex-grow: 1; padding: 12px; border: 1px solid var(--gray); border-radius: 8px;
+            font-family: inherit; font-size: 0.95rem; transition: border-color 0.2s;
+        }
+        .form-input:focus { outline: none; border-color: var(--accent); }
+        
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; }
+        .btn-primary { background: var(--black); color: var(--white); }
+        .btn-primary:hover { background: var(--accent); }
+        .btn-danger { background: var(--danger); color: var(--white); }
+        .btn-danger:hover { background: #dc2626; }
+
+        /* Avatar Picker */
+        .avatar-picker { display: flex; align-items: flex-start; gap: 32px; }
+        .current-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--gray-light); border: 4px solid var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .avatar-options { flex-grow: 1; }
+        .avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin-top: 12px; }
+        .avatar-option {
+            width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+            transition: all 0.2s; background: var(--gray-light);
+        }
+        .avatar-option:hover { transform: scale(1.1); }
+        .avatar-option.selected { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+
+        /* Danger Zone */
+        .danger-zone { border-color: #fecaca; background: #fef2f2; }
+        .danger-zone h3 { border-bottom-color: #fecaca; color: var(--danger); }
+        .danger-text { color: #7f1d1d; margin-bottom: 16px; font-size: 0.9rem; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; background: var(--black); color: white;
+            padding: 16px 24px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000; display: flex; align-items: center; gap: 12px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* Loading Overlay */
+        #loadingState { text-align: center; padding: 100px; color: var(--gray-dark); position: fixed; inset: 0; background: var(--gray-light); z-index: 20; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .avatar-picker { flex-direction: column; }
+            .form-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .form-label { width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingState">Verifica credenziali in corso...</div>
+
+    <div class="layout" id="settingsLayout" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">RL<span>.</span>Software</div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="dashboard.html">Dashboard</a></li>
+                <li class="nav-item active"><a href="setting.html">Impostazioni</a></li>
+                <li class="nav-item"><a href="index.html">Torna al Sito</a></li>
+            </ul>
+
+            <div class="user-mini">
+                <img src="" alt="User" id="sidebarAvatar">
+                <div class="user-mini-info">
+                    <div class="user-mini-email" id="sidebarEmail">...</div>
+                    <span class="logout-link" onclick="handleLogout()">Esci</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1 class="header-title">Impostazioni Account</h1>
+            <p class="header-subtitle">Gestisci il tuo profilo e la sicurezza del tuo account.</p>
+
+            <!-- Profile Section -->
+            <div class="settings-card">
+                <h3>Profilo Pubblico</h3>
+                <div class="avatar-picker">
+                    <img src="" alt="Current Avatar" class="current-avatar" id="previewAvatar">
+                    <div class="avatar-options">
+                        <span style="font-weight: 600; display: block; margin-bottom: 8px;">Scegli Avatar</span>
+                        <div class="avatar-grid" id="avatarGrid">
+                            <!-- Avatars injected via JS -->
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 32px;">
+                    <div class="form-row">
+                        <label class="form-label">Nickname</label>
+                        <input type="text" id="inputNickname" class="form-input" placeholder="Il tuo nome utente">
+                    </div>
+                    <div style="text-align: right;">
+                        <button class="btn btn-primary" onclick="updateProfile()">Salva Modifiche Profilo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <div class="settings-card">
+                <h3>Sicurezza</h3>
+                <div class="form-row">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="inputEmail" class="form-input" placeholder="La tua email" disabled style="background: #f9fafb; cursor: not-allowed;">
+                </div>
+                <div style="font-size: 0.8rem; color: #666; margin-top: -12px; margin-bottom: 20px; padding-left: 160px;">
+                    * La modifica dell'email richiede la verifica.
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Nuova Password</label>
+                    <input type="password" id="inputPassword" class="form-input" placeholder="Nuova password (min 6 caratteri)">
+                </div>
+                <div style="text-align: right;">
+                    <button class="btn btn-primary" onclick="updatePassword()">Aggiorna Password</button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-card danger-zone">
+                <h3>Zona Pericolosa</h3>
+                <p class="danger-text">Una volta eliminato il tuo account, tutti i tuoi dati, progressi e punteggi verranno persi per sempre. Questa azione è irreversibile.</p>
+                <button class="btn btn-danger" onclick="deleteAccount()">Elimina Account</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toastMessage">Messaggio</span>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut, 
+            updateProfile, 
+            updatePassword,
+            deleteUser,
+            EmailAuthProvider,
+            reauthenticateWithCredential
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARfFWTp1rIuK4wdNSH_doRaBtCkLVzI-g",
+            authDomain: "rl-software-33e91.firebaseapp.com",
+            projectId: "rl-software-33e91",
+            storageBucket: "rl-software-33e91.firebasestorage.app",
+            messagingSenderId: "341569824532",
+            appId: "1:341569824532:web:b1ef1b101d5c652790c401"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // State
+        let selectedAvatarUrl = "";
+        let currentUser = null;
+
+        // UI Elements
+        const loadingState = document.getElementById('loadingState');
+        const settingsLayout = document.getElementById('settingsLayout');
+        const sidebarEmail = document.getElementById('sidebarEmail');
+        const sidebarAvatar = document.getElementById('sidebarAvatar');
+        const previewAvatar = document.getElementById('previewAvatar');
+        const inputNickname = document.getElementById('inputNickname');
+        const inputEmail = document.getElementById('inputEmail');
+        const inputPassword = document.getElementById('inputPassword');
+        const avatarGrid = document.getElementById('avatarGrid');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Avatar Options (DiceBear)
+        const avatarStyles = ['avataaars', 'bottts', 'micah', 'pixel-art', 'lorelei'];
+        
+        function initAvatarGrid(email) {
+            avatarGrid.innerHTML = '';
+            avatarStyles.forEach((style, index) => {
+                const url = `https://api.dicebear.com/7.x/${style}/svg?seed=${email}${index}`;
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'avatar-option';
+                img.onclick = () => selectAvatar(url, img);
+                
+                // Auto-select if matches current
+                if (currentUser.photoURL && currentUser.photoURL.includes(style)) {
+                    selectAvatar(url, img);
+                }
+                avatarGrid.appendChild(img);
+            });
+            // If no selection yet, pick first
+            if (!selectedAvatarUrl) selectAvatar(`https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`, avatarGrid.children[0]);
+        }
+
+        function selectAvatar(url, imgElement) {
+            selectedAvatarUrl = url;
+            previewAvatar.src = url;
+            sidebarAvatar.src = url; // Update sidebar preview immediately
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            imgElement.classList.add('selected');
+        }
+
+        // Auth Check
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadingState.style.display = 'none';
+                settingsLayout.style.display = 'flex';
+
+                sidebarEmail.textContent = user.email;
+                sidebarAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+                previewAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+                
+                inputNickname.value = user.displayName || "";
+                inputEmail.value = user.email;
+
+                initAvatarGrid(user.email);
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Global Functions for onclick
+        window.updateProfile = async () => {
+            const newName = inputNickname.value;
+            try {
+                await updateProfile(auth.currentUser, {
+                    displayName: newName,
+                    photoURL: selectedAvatarUrl
+                });
+                showToast("Profilo aggiornato con successo!", "success");
+                // Refresh UI
+                sidebarEmail.textContent = newName || auth.currentUser.email;
+            } catch (error) {
+                showToast("Errore: " + error.message, "error");
+            }
+        };
+
+        window.updatePassword = async () => {
+            const newPass = inputPassword.value;
+            if (newPass.length < 6) {
+                showToast("La password deve avere almeno 6 caratteri.", "error");
+                return;
+            }
+            try {
+                await updatePassword(auth.currentUser, newPass);
+                inputPassword.value = "";
+                showToast("Password aggiornata!", "success");
+            } catch (error) {
+                // If error is 'auth/requires-recent-login', user needs to re-login
+                showToast("Errore: " + error.message + " (Potrebbe essere necessario rientrare)", "error");
+            }
+        };
+
+        window.deleteAccount = async () => {
+            if (confirm("Sei SICURO? Questa azione cancellerà tutto per sempre.")) {
+                if (confirm("Davvero sicuro? Scrivi 'ELIMINA' mentalmente e clicca OK.")) {
+                    try {
+                        await deleteUser(auth.currentUser);
+                        showToast("Account eliminato.", "success");
+                        setTimeout(() => window.location.href = 'index.html', 2000);
+                    } catch (error) {
+                        showToast("Errore: " + error.message, "error");
+                    }
+                }
+            }
+        };
+
+        window.handleLogout = () => {
+            signOut(auth).then(() => window.location.href = 'index.html');
+        };
+
+        function showToast(msg, type) {
+            toastMessage.textContent = msg;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+

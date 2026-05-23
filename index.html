@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Software — Web Game Studio</title>
+    
+    <!-- Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/400.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/700.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.0/700.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray-light: #f4f4f5;
+            --gray: #e4e4e7;
+            --gray-dark: #71717a;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--black); overflow-x: hidden; line-height: 1.6; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+            padding: 0 40px; height: 80px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-light);
+        }
+
+        .nav-logo {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: -1px;
+            color: var(--black); text-decoration: none; display: flex; align-items: center; gap: 4px;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links-desktop { display: flex; gap: 32px; list-style: none; }
+        .nav-links-desktop a { text-decoration: none; color: var(--black); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links-desktop a:hover { color: var(--accent); }
+
+        .nav-actions { display: flex; align-items: center; gap: 24px; }
+
+        .btn {
+            padding: 10px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+            border: none; font-family: 'Inter', sans-serif;
+        }
+        .btn-primary { background: var(--black); color: var(--white); }
+        .btn-primary:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-ghost { background: transparent; color: var(--black); }
+        .btn-ghost:hover { background: var(--gray-light); }
+
+        .user-menu-container { position: relative; display: none; }
+        .user-avatar-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--gray-light); border: 2px solid var(--gray);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: border-color 0.2s;
+        }
+        .user-avatar-btn:hover { border-color: var(--accent); }
+        .user-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        .dropdown-menu {
+            position: absolute; top: 55px; right: 0; width: 240px; background: var(--white);
+            border: 1px solid var(--gray); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease; z-index: 2001;
+        }
+        .dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        .dropdown-header { padding: 16px; border-bottom: 1px solid var(--gray-light); }
+        .dropdown-email { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dropdown-role { font-size: 0.75rem; color: var(--gray-dark); }
+        
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none;
+            color: var(--black); font-size: 0.9rem; transition: background 0.2s;
+        }
+        .dropdown-item:hover { background: var(--gray-light); }
+        .dropdown-divider { height: 1px; background: var(--gray-light); margin: 4px 0; }
+        .dropdown-item.logout { color: var(--danger); }
+
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 120px 40px 80px; position: relative; overflow: hidden;
+        }
+        .hero-bg-grid {
+            position: absolute; inset: 0; z-index: -1;
+            background-image: linear-gradient(var(--gray-light) 1px, transparent 1px), linear-gradient(90deg, var(--gray-light) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+        .hero-content { max-width: 800px; text-align: center; z-index: 1; }
+        .hero-badge {
+            display: inline-block; padding: 6px 16px; background: var(--gray-light); border-radius: 100px;
+            font-size: 0.8rem; font-weight: 600; color: var(--accent); margin-bottom: 24px; border: 1px solid var(--gray);
+        }
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif; font-size: clamp(3rem, 6vw, 5rem); font-weight: 700;
+            line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px;
+        }
+        .hero-desc { font-size: 1.25rem; color: var(--gray-dark); max-width: 600px; margin: 0 auto 40px; font-weight: 300; }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; }
+
+        .games-section { padding: 100px 40px; background: var(--white); }
+        .section-header { text-align: center; margin-bottom: 64px; }
+        .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
+        .section-subtitle { color: var(--gray-dark); font-size: 1.1rem; }
+        
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; max-width: 1000px; margin: 0 auto; }
+        .game-card {
+            background: var(--white); border: 1px solid var(--gray); border-radius: 16px; overflow: hidden;
+            transition: all 0.3s ease; display: flex; flex-direction: column;
+        }
+        .game-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: var(--accent); }
+        
+        .game-preview { height: 240px; background: var(--gray-light); position: relative; overflow: hidden; }
+        .game-preview img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .game-card:hover .game-preview img { transform: scale(1.05); }
+        
+        .play-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .game-card:hover .play-overlay { opacity: 1; }
+        .play-btn {
+            background: var(--white); color: var(--black); padding: 12px 24px; border-radius: 100px;
+            font-weight: 700; text-decoration: none; transform: translateY(10px); transition: transform 0.3s;
+        }
+        .game-card:hover .play-btn { transform: translateY(0); }
+
+        .game-info { padding: 32px; flex-grow: 1; display: flex; flex-direction: column; }
+        .game-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+        .game-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; }
+        .game-desc { color: var(--gray-dark); font-size: 0.95rem; margin-bottom: 24px; }
+        
+        .game-meta {
+            margin-top: auto; display: flex; justify-content: space-between; align-items: center;
+            padding-top: 16px; border-top: 1px solid var(--gray-light);
+        }
+        .platform-badge { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--gray-dark); font-weight: 500; }
+
+        /* Altri Giochi Button Section */
+        .more-games-section {
+            text-align: center;
+            padding: 80px 40px;
+            background: var(--gray-light);
+            border-top: 1px solid var(--gray);
+            border-bottom: 1px solid var(--gray);
+        }
+        .more-games-text {
+            font-size: 1.1rem;
+            color: var(--gray-dark);
+            margin-bottom: 32px;
+        }
+        .btn-more-games {
+            padding: 16px 48px;
+            background: var(--white);
+            border: 2px solid var(--black);
+            color: var(--black);
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-more-games:hover {
+            background: var(--black);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .btn-more-games svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+        .btn-more-games:hover svg {
+            transform: translateX(4px);
+        }
+
+        footer { padding: 60px 40px; border-top: 1px solid var(--gray-light); text-align: center; }
+        .footer-logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 16px; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
+        .footer-links a { color: var(--gray-dark); text-decoration: none; font-size: 0.9rem; }
+        .copyright { color: var(--gray-dark); font-size: 0.85rem; }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white; padding: 40px; border-radius: 16px; width: 90%; max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative;
+        }
+        .close-modal {
+            position: absolute; top: 16px; right: 16px; background: none; border: none;
+            font-size: 1.5rem; cursor: pointer; color: #999;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; color: #666; }
+        .form-input {
+            width: 100%; padding: 12px; border: 1px solid #e4e4e7; border-radius: 8px; font-family: inherit; outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--accent); }
+        .auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; text-align: center; display: none; }
+        .auth-switch { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #666; }
+        .auth-switch a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--accent); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-links-desktop { display: none; }
+            .hero-title { font-size: 2.5rem; }
+            .games-grid { grid-template-columns: 1fr; }
+            .hero-buttons { flex-direction: column; }
+            .more-games-section { padding: 60px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="nav-logo">RL<span>.</span>Software</a>
+        
+        <ul class="nav-links-desktop">
+            <li><a href="#games">Giochi</a></li>
+            <li><a href="games.html">Tutti i Giochi</a></li>
+            <li><a href="mailto:software.rl25@gmail.com">Contatti</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <div id="guestActions" style="display: flex; gap: 12px;">
+                <button class="btn btn-ghost" onclick="window.openAuthModal('login')">Accedi</button>
+                <button class="btn btn-primary" onclick="window.openAuthModal('register')">Registrati</button>
+            </div>
+
+            <div id="userMenuContainer" class="user-menu-container">
+                <button class="user-avatar-btn" onclick="window.toggleDropdown()">
+                    <img src="" alt="User" id="navAvatar">
+                </button>
+                
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-header">
+                        <div class="dropdown-email" id="navEmail">caricamento...</div>
+                        <div class="dropdown-role">Player Verificato</div>
+                    </div>
+                    <a href="dashboard.html" class="dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Dashboard
+                    </a>
+                    <a href="setting.html" class="dropdown-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Impostazioni
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item logout" onclick="window.handleLogout(event)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Esci
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg-grid"></div>
+        <div class="hero-content fade-up">
+            <div class="hero-badge">🚀 Nuovi Giochi Web Disponibili</div>
+            <h1 class="hero-title">Il futuro del gaming<br>è nel browser.</h1>
+            <p class="hero-desc">
+                RL Software crea esperienze di gioco immediate, accessibili e divertenti. Nessuna installazione, gioca direttamente dal tuo dispositivo.
+            </p>
+            <div class="hero-buttons">
+                <a href="#games" class="btn btn-primary">Scopri i Giochi</a>
+                <a href="mailto:software.rl25@gmail.com" class="btn btn-ghost" style="border: 1px solid var(--gray);">Contattaci</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section class="games-section" id="games">
+        <div class="section-header fade-up">
+            <h2 class="section-title">I Nostri Titoli</h2>
+            <p class="section-subtitle">Sviluppati per il web, giocabili ovunque.</p>
+        </div>
+
+        <div class="games-grid">
+            <div class="game-card fade-up">
+                <div class="game-preview">
+                    <img src="scopa_preview.png"id="scopaImg">
+                    <div class="play-overlay">
+                        <a href="https://l2010pro-rl.github.io/scopa-card" target="_blank" class="play-btn">Gioca Ora ↗</a>
+                    </div>
+                </div>
+                <div class="game-info">
+                    <div class="game-tag">Card Game</div>
+                    <h3 class="game-title">Super Scopa</h3>
+                    <p class="game-desc">
+                        Il classico gioco di carte italiano rivisitato in chiave moderna. Grafica pulita, gameplay fluido e sfide avvincenti contro l'IA o amici.
+                    </p>
+                    <div class="game-meta">
+                        <div class="platform-badge">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            Web Browser
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--gray-dark);">Gratis</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-card fade-up">
+                <div class="game-preview">
+                    <img src="laser_preview.png"  id="neonImg">
+                    <div class="play-overlay">
+                        <a href="https://l2010pro-rl.github.io/laser-arena" target="_blank" class="play-btn">Gioca Ora ↗</a>
+                    </div>
+                </div>
+                <div class="game-info">
+                    <div class="game-tag">Action Arcade</div>
+                    <h3 class="game-title">Neon Arena</h3>
+                    <p class="game-desc">
+                        Un'arena frenetica piena di laser, nemici e potenza di fuoco. Sopravvivi alle ondate nemiche e conquista il punteggio più alto in questo shooter retrò.
+                    </p>
+                    <div class="game-meta">
+                        <div class="platform-badge">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            Web Browser
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--gray-dark);">Gratis</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Altri Giochi Section -->
+    <section class="more-games-section fade-up">
+        <p class="more-games-text">Hai visto i nostri titoli? Scopri tutta la collezione di giochi disponibili.</p>
+        <a href="games.html" class="btn-more-games">
+            Altri Giochi
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">RL Software</div>
+        <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Termini di Servizio</a>
+            <a href="mailto:software.rl25@gmail.com">Supporto</a>
+        </div>
+        <p class="copyright">© 2026 RL Software. Tutti i diritti riservati.</p>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="window.closeAuthModal()">&times;</button>
+            <h2 id="authTitle" style="font-family: 'Space Grotesk'; margin-bottom: 24px; font-size: 1.8rem;">Accedi</h2>
+            
+            <form id="authForm" onsubmit="window.handleFirebaseAuth(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="authEmail" class="form-input" required placeholder="nome@esempio.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="authPassword" class="form-input" required placeholder="••••••••">
+                </div>
+                <div id="authError" class="auth-error"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;" id="authSubmitBtn">Conferma</button>
+            </form>
+            
+            <div class="auth-switch">
+                <span id="switchText">Non hai un account?</span> 
+                <a onclick="window.toggleAuthMode()" id="switchLink">Registrati</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARfFWTp1rIuK4wdNSH_doRaBtCkLVzI-g",
+            authDomain: "rl-software-33e91.firebaseapp.com",
+            projectId: "rl-software-33e91",
+            storageBucket: "rl-software-33e91.firebasestorage.app",
+            messagingSenderId: "341569824532",
+            appId: "1:341569824532:web:b1ef1b101d5c652790c401"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const guestActions = document.getElementById('guestActions');
+        const userMenuContainer = document.getElementById('userMenuContainer');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const navEmail = document.getElementById('navEmail');
+        const navAvatar = document.getElementById('navAvatar');
+        
+        const authModal = document.getElementById('authModal');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const switchText = document.getElementById('switchText');
+        const switchLink = document.getElementById('switchLink');
+        const authError = document.getElementById('authError');
+        
+        let isLoginMode = true;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setLoggedInState(user);
+            } else {
+                setLoggedOutState();
+            }
+        });
+
+        function setLoggedInState(user) {
+            guestActions.style.display = 'none';
+            userMenuContainer.style.display = 'block';
+            navEmail.textContent = user.displayName || user.email;
+            navAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`;
+        }
+
+        function setLoggedOutState() {
+            guestActions.style.display = 'flex';
+            userMenuContainer.style.display = 'none';
+            dropdownMenu.classList.remove('active');
+        }
+
+        window.openAuthModal = (mode) => {
+            isLoginMode = (mode === 'login');
+            updateAuthModalUI();
+            authModal.style.display = 'flex';
+            authError.style.display = 'none';
+        }
+
+        window.closeAuthModal = () => {
+            authModal.style.display = 'none';
+        }
+
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            updateAuthModalUI();
+            authError.style.display = 'none';
+        }
+
+        function updateAuthModalUI() {
+            if (isLoginMode) {
+                authTitle.textContent = 'Accedi';
+                authSubmitBtn.textContent = 'Accedi';
+                switchText.textContent = 'Non hai un account?';
+                switchLink.textContent = 'Registrati';
+            } else {
+                authTitle.textContent = 'Registrati';
+                authSubmitBtn.textContent = 'Crea Account';
+                switchText.textContent = 'Hai già un account?';
+                switchLink.textContent = 'Accedi';
+            }
+        }
+
+        window.handleFirebaseAuth = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            authError.style.display = 'none';
+            authSubmitBtn.disabled = true;
+            authSubmitBtn.innerHTML = '<span class="spinner"></span> Caricamento...';
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+                window.closeAuthModal();
+            } catch (error) {
+                authError.textContent = getAuthErrorMessage(error.code);
+                authError.style.display = 'block';
+            } finally {
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.textContent = isLoginMode ? 'Accedi' : 'Crea Account';
+            }
+        }
+
+        window.handleLogout = async (e) => {
+            e.preventDefault();
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function getAuthErrorMessage(code) {
+            switch (code) {
+                case 'auth/user-not-found': return 'Nessun utente trovato con questa email.';
+                case 'auth/wrong-password': return 'Password errata.';
+                case 'auth/email-already-in-use': return 'Email già registrata.';
+                case 'auth/weak-password': return 'La password deve essere di almeno 6 caratteri.';
+                case 'auth/invalid-email': return 'Email non valida.';
+                case 'auth/invalid-credential': return 'Credenziali non valide.';
+                default: return 'Si è verificato un errore. Riprova.';
+            }
+        }
+
+        window.toggleDropdown = () => {
+            dropdownMenu.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!userMenuContainer.contains(e.target)) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    </script>
+
+    <script>
+        const images = {
+            scopaImg: { prompt: "Digital illustration of an Italian card game Scopa, playing cards on a green felt table, modern clean UI style, bright lighting, high quality, web game screenshot aesthetic, 16:10 aspect ratio" },
+            neonImg: { prompt: "Arcade space shooter game screenshot, neon lasers, geometric enemies, dark background with glowing blue and pink elements, retro-futuristic style, intense action, web game aesthetic, 16:10 aspect ratio" }
+        };
+        async function loadImages() {
+            for (const [id, data] of Object.entries(images)) {
+                try {
+                    const result = await image_gen(data.prompt);
+                    const el = document.getElementById(id);
+                    if (el && result && result.url) el.src = result.url;
+                } catch (e) { console.error("Image gen error", e); }
+            }
+        }
+        loadImages();
+    </script>
+</body>
+</html>
