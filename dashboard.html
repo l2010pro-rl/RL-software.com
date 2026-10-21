@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — RL Software</title>
-    
+
     <!-- Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/300.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/400.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@4.5.0/700.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5.0.0/700.css" rel="stylesheet">
+
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         :root {
@@ -28,7 +31,6 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--gray-light); color: var(--black); min-height: 100vh; }
 
-        /* Layout */
         .layout { display: flex; min-height: 100vh; }
 
         /* Sidebar */
@@ -53,9 +55,7 @@
             border-radius: 100px; margin-left: auto; font-weight: 700;
         }
 
-        .sidebar-footer {
-            margin-top: auto; padding-top: 24px; border-top: 1px solid var(--gray);
-        }
+        .sidebar-footer { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--gray); }
         .user-mini { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .user-mini img { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-light); }
         .user-mini-email { font-size: 0.85rem; font-weight: 600; }
@@ -72,9 +72,7 @@
 
         /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
-        .stat-card {
-            background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid var(--gray);
-        }
+        .stat-card { background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid var(--gray); }
         .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-dark); margin-bottom: 8px; font-weight: 600; }
         .stat-value { font-family: 'Space Grotesk'; font-size: 2rem; font-weight: 700; }
         .stat-value.blue { color: var(--accent); }
@@ -84,7 +82,7 @@
 
         /* Tabs */
         .tabs-container { margin-bottom: 24px; }
-        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--gray); }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--gray); flex-wrap: wrap; }
         .tab {
             padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
             border: none; background: transparent; color: var(--gray-dark); position: relative;
@@ -103,9 +101,7 @@
         .tab.active .tab-count { background: var(--accent); color: white; }
 
         /* Table */
-        .table-container {
-            background: var(--white); border-radius: 12px; border: 1px solid var(--gray); overflow: hidden;
-        }
+        .table-container { background: var(--white); border-radius: 12px; border: 1px solid var(--gray); overflow: hidden; }
         .table-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 24px; border-bottom: 1px solid var(--gray-light);
@@ -151,6 +147,8 @@
         .btn-icon.approve:hover { background: #dcfce7; border-color: var(--success); color: var(--success); }
         .btn-icon.reject:hover { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
         .btn-icon.delete:hover { background: #fee2e2; border-color: var(--danger); color: var(--danger); }
+        .btn-icon.stats:hover { background: #dbeafe; border-color: var(--accent); color: var(--accent); }
+        .btn-icon.test:hover { background: #cffafe; border-color: #06b6d4; color: #0891b2; }
 
         .btn {
             padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
@@ -166,6 +164,7 @@
         .btn-ghost { background: transparent; color: var(--gray-dark); border: 1px solid var(--gray); }
         .btn-ghost:hover { border-color: var(--black); color: var(--black); }
         .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* Modal */
         .modal-overlay {
@@ -183,9 +182,7 @@
             display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;
         }
         .modal-close:hover { background: var(--gray-light); }
-        .modal-title {
-            font-family: 'Space Grotesk'; font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px;
-        }
+        .modal-title { font-family: 'Space Grotesk'; font-size: 1.4rem; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
 
         .form-group { margin-bottom: 18px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -193,8 +190,12 @@
         .form-input, .form-textarea, .form-select {
             width: 100%; padding: 10px 12px; border: 1px solid var(--gray); border-radius: 8px;
             font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+            background: var(--white);
         }
         .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+        .form-input:disabled, .form-textarea:disabled, .form-select:disabled {
+            background: var(--gray-light); color: var(--gray-dark); cursor: not-allowed;
+        }
         .form-textarea { min-height: 80px; resize: vertical; }
         .form-note { font-size: 0.75rem; color: var(--gray-dark); margin-top: 4px; }
         .form-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: none; }
@@ -226,16 +227,128 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* Analytics */
+        .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .chart-card { background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid var(--gray); margin-bottom: 24px; }
+        .chart-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 16px; }
+        .chart-wrapper { position: relative; height: 280px; }
+        .games-ranking { list-style: none; }
+        .games-ranking li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--gray-light); }
+        .games-ranking li:last-child { border: none; }
+        .rank-bar-bg { flex-grow: 1; height: 8px; background: var(--gray-light); border-radius: 100px; overflow: hidden; }
+        .rank-bar { height: 100%; background: var(--accent); border-radius: 100px; }
+        .rank-value { font-weight: 700; min-width: 36px; text-align: right; font-family: 'Space Grotesk'; }
+        .rank-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; font-size: 0.88rem; }
+
+        /* Settings */
+        .settings-card {
+            background: var(--white); border-radius: 12px; border: 1px solid var(--gray);
+            padding: 32px; margin-bottom: 24px;
+        }
+        .settings-card h3 {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        .settings-row { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; }
+        .settings-label { width: 150px; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+        .settings-input {
+            flex-grow: 1; padding: 10px 12px; border: 1px solid var(--gray); border-radius: 8px;
+            font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+            background: var(--white);
+        }
+        .settings-input:focus { border-color: var(--accent); }
+        .settings-input:disabled { background: var(--gray-light); cursor: not-allowed; color: var(--gray-dark); }
+        .settings-hint { font-size: 0.78rem; color: var(--gray-dark); margin-top: -12px; margin-bottom: 20px; padding-left: 174px; }
+
+        .avatar-picker-v2 { display: flex; gap: 32px; align-items: flex-start; }
+        .avatar-preview-block {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            flex-shrink: 0; width: 160px;
+        }
+        .avatar-preview-block .current-avatar { width: 120px; height: 120px; }
+        .avatar-name { font-size: 0.78rem; color: var(--gray-dark); text-align: center; }
+
+        .avatar-style-tabs {
+            display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 16px;
+            border-bottom: 2px solid var(--gray);
+        }
+        .avatar-style-tab {
+            padding: 10px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            border: none; background: transparent; color: var(--gray-dark); position: relative;
+            transition: color 0.2s; font-family: inherit;
+        }
+        .avatar-style-tab:hover { color: var(--black); }
+        .avatar-style-tab.active { color: var(--accent); }
+        .avatar-style-tab.active::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 2px; background: var(--accent);
+        }
+
+        .avatar-modal-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px;
+            max-height: 420px; overflow-y: auto; padding: 4px;
+            border: 1px solid var(--gray-light); border-radius: 8px; background: var(--white);
+        }
+        .avatar-tile {
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 10px 6px; border-radius: 8px; border: 2px solid transparent;
+            transition: all 0.2s; background: var(--white);
+        }
+        .avatar-tile:hover { background: var(--gray-light); transform: translateY(-2px); }
+        .avatar-tile.selected {
+            border-color: var(--accent);
+            background: rgba(37, 99, 235, 0.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        .avatar-tile img {
+            width: 64px; height: 64px; border-radius: 50%; background: var(--gray-light);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--gray); border-radius: 24px; transition: background 0.3s;
+        }
+        .toggle-slider::before {
+            position: absolute; content: ''; height: 18px; width: 18px;
+            left: 3px; top: 3px; background: var(--white); border-radius: 50%; transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--success); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+        /* Settings Toggle Row */
+        .settings-toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--gray-light);
+        }
+        .settings-toggle-row:last-of-type { border-bottom: none; }
+        .settings-toggle-label { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+        .settings-toggle-desc { font-size: 0.82rem; color: var(--gray-dark); line-height: 1.4; }
+        .toggle-row-content { flex-grow: 1; }
+
+        .danger-zone { border-color: #fecaca; background: #fef2f2; }
+        .danger-zone h3 { border-bottom-color: #fecaca; color: var(--danger); }
+        .danger-text { color: #7f1d1d; margin-bottom: 16px; font-size: 0.9rem; line-height: 1.5; }
 
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .main-content { margin-left: 0; padding: 24px 20px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .form-row { grid-template-columns: 1fr; }
+            .analytics-grid { grid-template-columns: 1fr; }
             .table-container { overflow-x: auto; }
             table { min-width: 600px; }
+            .avatar-picker-v2 { flex-direction: column; align-items: stretch; }
+            .avatar-preview-block { width: auto; flex-direction: row; justify-content: flex-start; }
+            .avatar-preview-block .current-avatar { width: 80px; height: 80px; }
+            .settings-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .settings-label { width: auto; }
+            .settings-hint { padding-left: 0; }
         }
     </style>
 </head>
@@ -253,20 +366,30 @@
         <aside class="sidebar">
             <div>
                 <div class="brand">RL<span>.</span>Software</div>
-                <div class="brand-sub">Dashboard Admin</div>
+                <div class="brand-sub" id="brandSub">Dashboard</div>
             </div>
-            
+
             <ul class="nav-menu">
-                <li class="nav-item active"><a href="#" data-tab="games" onclick="switchTab('games')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    Giochi
-                </a></li>
-                <li class="nav-item"><a href="#" data-tab="pending" onclick="switchTab('pending')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    In Attesa
-                    <span class="nav-badge" id="pendingBadge" style="display: none;">0</span>
-                </a></li>
-                <li class="nav-item"><a href="setting.html">
+                <li class="nav-item active" data-tab="games">
+                    <a href="#" onclick="switchTab('games'); return false;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        <span id="navGamesLabel">Giochi</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tab="analytics">
+                    <a href="#" onclick="switchTab('analytics'); return false;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        Analytics
+                    </a>
+                </li>
+                <li class="nav-item admin-only" data-tab="pending" style="display:none;">
+                    <a href="#" onclick="switchTab('pending'); return false;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        In Attesa
+                        <span class="nav-badge" id="pendingBadge" style="display: none;">0</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tab="settings"><a href="#" onclick="switchTab('settings'); return false;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Impostazioni
                 </a></li>
@@ -291,79 +414,249 @@
         <!-- Main -->
         <main class="main-content">
             <div class="page-header">
-                <h1 class="page-title">Gestione Giochi</h1>
-                <p class="page-subtitle">Aggiungi, modifica e approva i giochi della piattaforma.</p>
+                <h1 class="page-title" id="pageTitle">Gestione Giochi</h1>
+                <p class="page-subtitle" id="pageSubtitle">Aggiungi, modifica e approva i giochi della piattaforma.</p>
             </div>
 
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Totale Giochi</div>
-                    <div class="stat-value blue" id="statTotal">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Approvati</div>
-                    <div class="stat-value green" id="statApproved">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">In Attesa</div>
-                    <div class="stat-value orange" id="statPending">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">RL Software</div>
-                    <div class="stat-value" id="statRL" style="color: var(--black);">0</div>
-                </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs-container">
-                <div class="tabs">
-                    <button class="tab active" data-tab-tab="all" onclick="switchContentTab('all')">
-                        Tutti <span class="tab-count" id="countAll">0</span>
-                    </button>
-                    <button class="tab" data-tab-tab="rl" onclick="switchContentTab('rl')">
-                        RL Software <span class="tab-count" id="countRL">0</span>
-                    </button>
-                    <button class="tab" data-tab-tab="community" onclick="switchContentTab('community')">
-                        Community <span class="tab-count" id="countCommunity">0</span>
-                    </button>
-                    <button class="tab" data-tab-tab="pending" onclick="switchContentTab('pending')">
-                        In Attesa <span class="tab-count" id="countPending">0</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Games Table -->
-            <div class="table-container">
-                <div class="table-header">
-                    <h3 class="table-title" id="tableTitle">Tutti i giochi</h3>
-                    <div class="table-actions">
-                        <button class="btn btn-primary btn-sm" onclick="openAddGameModal()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Aggiungi Gioco
-                        </button>
+            <!-- View: Games -->
+            <div id="viewGames">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label" id="statTotalLabel">Totale Giochi</div>
+                        <div class="stat-value blue" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Approvati</div>
+                        <div class="stat-value green" id="statApproved">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">In Attesa</div>
+                        <div class="stat-value orange" id="statPending">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label" id="stat4Label">RL Software</div>
+                        <div class="stat-value" id="stat4" style="color: var(--black);">0</div>
                     </div>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Gioco</th>
-                                <th>Genere</th>
-                                <th>Fonte</th>
-                                <th>Stato</th>
-                                <th>Data</th>
-                                <th style="width: 140px;">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gamesTableBody">
-                        </tbody>
-                    </table>
+
+                <div class="tabs-container">
+                    <div class="tabs" id="contentTabs"></div>
                 </div>
-                <div id="emptyTable" class="empty-state" style="display: none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
-                    <h4>Nessun gioco trovato</h4>
-                    <p>Aggiungi un nuovo gioco o modifica i filtri.</p>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title" id="tableTitle">Tutti i giochi</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary btn-sm" onclick="openAddGameModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span id="addGameBtnLabel">Aggiungi Gioco</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gioco</th>
+                                    <th>Genere</th>
+                                    <th>Fonte</th>
+                                    <th>Stato</th>
+                                    <th>Data</th>
+                                    <th style="width: 180px;">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gamesTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="emptyTable" class="empty-state" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+                        <h4>Nessun gioco trovato</h4>
+                        <p>Aggiungi un nuovo gioco o modifica i filtri.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Analytics -->
+            <div id="viewAnalytics" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Giocate Totali</div>
+                        <div class="stat-value blue" id="statPlaysTotal">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Giocatori Unici</div>
+                        <div class="stat-value green" id="statUniquePlayers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Oggi</div>
+                        <div class="stat-value orange" id="statPlaysToday">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ultima Settimana</div>
+                        <div class="stat-value blue" id="statPlaysWeek">0</div>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="chart-card" style="margin-bottom: 0;">
+                        <div class="chart-title">Giocate negli ultimi 30 giorni</div>
+                        <div class="chart-wrapper">
+                            <canvas id="playsTrendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card" style="margin-bottom: 0;">
+                        <div class="chart-title">Top Giochi</div>
+                        <ul class="games-ranking" id="topGamesRanking">
+                            <li style="color: var(--gray-dark); justify-content: center;">Nessun dato</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Giocate per gioco</div>
+                    <div class="chart-wrapper">
+                        <canvas id="playsPerGameChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Giocate Recenti</h3>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gioco</th>
+                                    <th>Giocatore</th>
+                                    <th>Data e ora</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentPlaysBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Settings -->
+            <div id="viewSettings" style="display: none;">
+                <!-- Profile Section -->
+                <div class="settings-card">
+                    <h3>Profilo Pubblico</h3>
+                    <div class="avatar-picker-v2">
+                        <div class="avatar-preview-block">
+                            <img src="" alt="Avatar attuale" class="current-avatar" id="previewAvatar">
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="openAvatarModal()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Cambia Avatar
+                            </button>
+                            <span class="avatar-name" id="avatarName">Avatar attuale</span>
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <div class="settings-row">
+                                <label class="settings-label" for="inputNickname">Nickname</label>
+                                <input type="text" id="inputNickname" class="settings-input" placeholder="Il tuo nome utente" maxlength="40">
+                            </div>
+                            <div class="settings-hint">* L'avatar si sceglie cliccando "Cambia Avatar": la selezione va poi confermata con "Salva Modifiche Profilo".</div>
+                            <div style="text-align: right; margin-top: 24px;">
+                                <button class="btn btn-primary" onclick="saveProfileSettings()">Salva Modifiche Profilo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extended Profile Section -->
+                <div class="settings-card">
+                    <h3>Profilo Esteso</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="prefBio">Bio</label>
+                        <textarea id="prefBio" class="form-textarea" maxlength="150" placeholder="Una breve descrizione di te (max 150 caratteri)..."></textarea>
+                        <div class="form-note"><span id="bioCounter">0</span> / 150 caratteri</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="prefGenre">Genere preferito</label>
+                        <select id="prefGenre" class="form-select">
+                            <option value="">Nessun preferito</option>
+                            <option value="Card Game">Card Game</option>
+                            <option value="Action">Action</option>
+                            <option value="Arcade">Arcade</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Strategy">Strategy</option>
+                            <option value="Platform">Platform</option>
+                            <option value="RPG">RPG</option>
+                            <option value="Other">Altro</option>
+                        </select>
+                        <div class="form-note">Usato per evidenziare giochi pertinenti (in futuro).</div>
+                    </div>
+                    <div style="text-align: right; margin-top: 24px;">
+                        <button class="btn btn-primary" onclick="saveProfileExtended()">Salva Profilo Esteso</button>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div class="settings-card">
+                    <h3>Preferenze</h3>
+
+                    <div class="settings-toggle-row">
+                        <div class="toggle-row-content">
+                            <div class="settings-toggle-label">Apertura dashboard</div>
+                            <div class="settings-toggle-desc">Scheda da aprire automaticamente quando entri nella dashboard</div>
+                        </div>
+                        <select id="prefDefaultTab" class="form-select" style="width: 200px;">
+                            <option value="all">Tutti</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-toggle-row">
+                        <div class="toggle-row-content">
+                            <div class="settings-toggle-label">Notifiche email</div>
+                            <div class="settings-toggle-desc">Ricevi un'email quando un tuo gioco viene approvato o rifiutato</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="prefEmailNotif">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-toggle-row">
+                        <div class="toggle-row-content">
+                            <div class="settings-toggle-label">Email pubblica</div>
+                            <div class="settings-toggle-desc">Mostra la tua email nella tua pagina profilo pubblica</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="prefPublicEmail">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 24px;">
+                        <button class="btn btn-primary" onclick="savePreferences()">Salva Preferenze</button>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="settings-card">
+                    <h3>Sicurezza</h3>
+                    <div class="settings-row">
+                        <label class="settings-label" for="inputEmail">Email</label>
+                        <input type="email" id="inputEmail" class="settings-input" disabled>
+                    </div>
+                    <div class="settings-hint">* La modifica dell'email non è disponibile. Contatta un amministratore se necessario.</div>
+                    <div class="settings-row">
+                        <label class="settings-label" for="inputPassword">Nuova Password</label>
+                        <input type="password" id="inputPassword" class="settings-input" placeholder="Nuova password (min 6 caratteri)">
+                    </div>
+                    <div class="settings-hint">* Potrebbe essere necessario rieffettuare il login di recente per cambiare la password.</div>
+                    <div style="text-align: right;">
+                        <button class="btn btn-primary" onclick="savePasswordSettings()">Aggiorna Password</button>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="settings-card danger-zone">
+                    <h3>Zona Pericolosa</h3>
+                    <p class="danger-text">Una volta eliminato il tuo account, tutti i tuoi dati, i giochi proposti e le statistiche verranno persi per sempre. Questa azione è irreversibile.</p>
+                    <button class="btn btn-danger" onclick="deleteAccountNow()">Elimina Account</button>
                 </div>
             </div>
         </main>
@@ -473,16 +766,58 @@
         </div>
     </div>
 
+    <!-- Game Stats Modal -->
+    <div class="modal-overlay" id="gameStatsModal">
+        <div class="modal-content" style="max-width: 620px;">
+            <button class="modal-close" onclick="document.getElementById('gameStatsModal').classList.remove('active')">&times;</button>
+            <h2 class="modal-title" id="gameStatsTitle">Statistiche Gioco</h2>
+            <div id="gameStatsBody"></div>
+        </div>
+    </div>
+
+    <!-- Avatar Picker Modal -->
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal-content" style="max-width: 720px;">
+            <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
+            <h2 class="modal-title">Scegli il tuo avatar</h2>
+            <p style="color: var(--gray-dark); font-size: 0.88rem; margin-bottom: 20px;">
+                Sono disponibili <strong id="avatarCount">0</strong> avatar tra cui scegliere. Sono identici per tutti gli utenti.
+            </p>
+
+            <div class="avatar-style-tabs" id="avatarStyleTabs"></div>
+
+            <input type="text" id="avatarSearch" class="settings-input" placeholder="Cerca per nome..." style="margin-bottom: 16px;">
+
+            <div class="avatar-modal-grid" id="avatarModalGrid"></div>
+
+            <div style="display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-top: 24px;">
+                <button type="button" class="btn btn-ghost" onclick="randomAvatar()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                    Random
+                </button>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-ghost" onclick="closeAvatarModal()">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmAvatar()">Conferma Selezione</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <!-- Firebase + Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, 
-            query, onSnapshot, serverTimestamp, getDoc, setDoc 
+        import {
+            getAuth, onAuthStateChanged, signOut,
+            updateProfile, updatePassword, deleteUser,
+            EmailAuthProvider, reauthenticateWithCredential
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import {
+            getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
+            query, where, onSnapshot, serverTimestamp, getDoc, setDoc,
+            getDocs, limit
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -499,9 +834,16 @@
         const db = getFirestore(app);
 
         let currentUser = null;
+        let currentUserRole = 'user';
         let allGames = [];
+        let allPlays = [];
+        let currentView = 'games';
         let currentContentTab = 'all';
         let unsubscribeGames = null;
+        let unsubscribePlays = null;
+        let playsTrendChart = null;
+        let playsPerGameChart = null;
+        let miniGameChart = null;
 
         // DOM
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -512,7 +854,7 @@
         const gamesTableBody = document.getElementById('gamesTableBody');
         const emptyTable = document.getElementById('emptyTable');
 
-        // Auth + Role Check
+        // ==================== AUTH + ROLE ====================
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'index.html';
@@ -520,93 +862,170 @@
             }
             currentUser = user;
 
-            // Check admin role
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+
             let role = 'user';
             let email = user.email;
 
             if (userDoc.exists()) {
                 role = userDoc.data().role || 'user';
-            }
-
-            // If first admin, set role
-            if (role === 'user') {
-                // Check if any admin exists
-                // For simplicity, we auto-promote the first user
-                const usersSnapshot = await getDoc(doc(db, 'users', user.uid));
-                if (!usersSnapshot.exists()) {
-                    await setDoc(doc(db, 'users', user.uid), {
-                        email: user.email,
-                        role: 'admin',
-                        createdAt: serverTimestamp()
-                    });
-                    role = 'admin';
+            } else {
+                // First-time user: if no users exist yet, promote to admin
+                try {
+                    const existingUsers = await getDocs(query(collection(db, 'users'), limit(1)));
+                    if (existingUsers.empty) {
+                        role = 'admin';
+                    }
+                } catch (e) {
+                    console.warn('Impossibile verificare utenti esistenti (potrebbero essere le regole Firestore):', e);
                 }
+                await setDoc(userDocRef, {
+                    email: user.email,
+                    role: role,
+                    createdAt: serverTimestamp()
+                });
             }
 
+            currentUserRole = role;
+
+            // Sidebar info
             sidebarEmail.textContent = email;
             sidebarRole.textContent = role === 'admin' ? 'Amministratore' : 'Utente';
             sidebarAvatar.src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`;
 
-            if (role !== 'admin') {
-                // Non-admin: redirect to games page
-                showToast('Accesso riservato agli amministratori.', 'error');
-                setTimeout(() => window.location.href = 'games.html', 2000);
-                return;
-            }
+            // Role-specific UI
+            const isAdmin = role === 'admin';
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = isAdmin ? '' : 'none';
+            });
+            document.getElementById('brandSub').textContent = isAdmin ? 'Dashboard Admin' : 'Dashboard Utente';
+            document.getElementById('pageTitle').textContent = isAdmin ? 'Gestione Giochi' : 'I Miei Giochi';
+            document.getElementById('pageSubtitle').textContent = isAdmin
+                ? 'Aggiungi, modifica e approva i giochi della piattaforma.'
+                : 'Gestisci i tuoi giochi e monitora le statistiche.';
+            document.getElementById('statTotalLabel').textContent = isAdmin ? 'Totale Giochi' : 'I Miei Giochi';
+            document.getElementById('stat4Label').textContent = isAdmin ? 'RL Software' : 'Rifiutati';
+            document.getElementById('navGamesLabel').textContent = isAdmin ? 'Giochi' : 'I Miei Giochi';
+            document.getElementById('addGameBtnLabel').textContent = isAdmin ? 'Aggiungi Gioco' : 'Proponi Gioco';
+
+            if (isAdmin) setupAdminTabs();
+            else setupUserTabs();
 
             loadingOverlay.style.display = 'none';
             dashboardLayout.style.display = 'flex';
 
             loadGames();
+            loadPlays();
         });
 
-        // Load all games (real-time)
+        // ==================== TABS SETUP ====================
+        function setupAdminTabs() {
+            document.getElementById('contentTabs').innerHTML = `
+                <button class="tab active" data-tab-tab="all" onclick="switchContentTab('all')">Tutti <span class="tab-count" id="countAll">0</span></button>
+                <button class="tab" data-tab-tab="rl" onclick="switchContentTab('rl')">RL Software <span class="tab-count" id="countRL">0</span></button>
+                <button class="tab" data-tab-tab="community" onclick="switchContentTab('community')">Community <span class="tab-count" id="countCommunity">0</span></button>
+                <button class="tab" data-tab-tab="pending" onclick="switchContentTab('pending')">In Attesa <span class="tab-count" id="countPending">0</span></button>
+            `;
+            currentContentTab = 'all';
+        }
+
+        function setupUserTabs() {
+            document.getElementById('contentTabs').innerHTML = `
+                <button class="tab active" data-tab-tab="all" onclick="switchContentTab('all')">Tutti <span class="tab-count" id="countAll">0</span></button>
+                <button class="tab" data-tab-tab="approved" onclick="switchContentTab('approved')">Pubblicati <span class="tab-count" id="countApproved">0</span></button>
+                <button class="tab" data-tab-tab="pending" onclick="switchContentTab('pending')">In Attesa <span class="tab-count" id="countPending">0</span></button>
+                <button class="tab" data-tab-tab="rejected" onclick="switchContentTab('rejected')">Rifiutati <span class="tab-count" id="countRejected">0</span></button>
+            `;
+            currentContentTab = 'all';
+        }
+
+        // ==================== LOAD GAMES & PLAYS ====================
         function loadGames() {
             if (unsubscribeGames) unsubscribeGames();
 
-            const q = query(collection(db, 'games'));
+            let q;
+            if (currentUserRole === 'admin') {
+                q = query(collection(db, 'games'));
+            } else {
+                q = query(collection(db, 'games'), where('proposedBy', '==', currentUser.uid));
+            }
+
             unsubscribeGames = onSnapshot(q, (snapshot) => {
                 allGames = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateStats();
-                renderTable();
+                if (currentView === 'games') renderTable();
+                if (currentView === 'analytics') renderAnalytics();
             }, (error) => {
-                console.error('Firestore error:', error);
+                console.error('Firestore games error:', error);
+                showToast('Errore nel caricamento dei giochi. Controlla le regole Firestore.', 'error');
             });
         }
 
+        function loadPlays() {
+            if (unsubscribePlays) unsubscribePlays();
+
+            let q;
+            if (currentUserRole === 'admin') {
+                q = query(collection(db, 'gamePlays'));
+            } else {
+                q = query(collection(db, 'gamePlays'), where('proposedBy', '==', currentUser.uid));
+            }
+
+            unsubscribePlays = onSnapshot(q, (snapshot) => {
+                allPlays = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (currentView === 'analytics') renderAnalytics();
+            }, (error) => {
+                console.error('Firestore plays error:', error);
+            });
+        }
+
+        // ==================== STATS ====================
         function updateStats() {
             const total = allGames.length;
             const approved = allGames.filter(g => g.status === 'approved').length;
             const pending = allGames.filter(g => g.status === 'pending').length;
+            const rejected = allGames.filter(g => g.status === 'rejected').length;
             const rl = allGames.filter(g => g.isOfficial === true).length;
             const community = allGames.filter(g => g.isOfficial === false && g.status === 'approved').length;
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statApproved').textContent = approved;
             document.getElementById('statPending').textContent = pending;
-            document.getElementById('statRL').textContent = rl;
 
-            document.getElementById('countAll').textContent = total;
-            document.getElementById('countRL').textContent = rl;
-            document.getElementById('countCommunity').textContent = community;
-            document.getElementById('countPending').textContent = pending;
+            if (currentUserRole === 'admin') {
+                document.getElementById('stat4').textContent = rl;
+                document.getElementById('stat4').style.color = 'var(--black)';
+                document.getElementById('countAll').textContent = total;
+                document.getElementById('countRL').textContent = rl;
+                document.getElementById('countCommunity').textContent = community;
+                document.getElementById('countPending').textContent = pending;
 
-            // Badge
-            const badge = document.getElementById('pendingBadge');
-            if (pending > 0) {
-                badge.textContent = pending;
-                badge.style.display = 'inline';
+                const badge = document.getElementById('pendingBadge');
+                if (pending > 0) {
+                    badge.textContent = pending;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
             } else {
-                badge.style.display = 'none';
+                document.getElementById('stat4').textContent = rejected;
+                document.getElementById('stat4').className = 'stat-value red';
+                document.getElementById('countAll').textContent = total;
+                document.getElementById('countApproved').textContent = approved;
+                document.getElementById('countPending').textContent = pending;
+                document.getElementById('countRejected').textContent = rejected;
             }
         }
 
+        // ==================== TABLE ====================
         function getFilteredGames() {
             switch (currentContentTab) {
                 case 'rl': return allGames.filter(g => g.isOfficial === true);
                 case 'community': return allGames.filter(g => g.isOfficial === false && g.status === 'approved');
                 case 'pending': return allGames.filter(g => g.status === 'pending');
+                case 'approved': return allGames.filter(g => g.status === 'approved');
+                case 'rejected': return allGames.filter(g => g.status === 'rejected');
                 default: return allGames;
             }
         }
@@ -621,7 +1040,6 @@
             }
             emptyTable.style.display = 'none';
 
-            // Sort: pending first, then by title
             games.sort((a, b) => {
                 if (a.status === 'pending' && b.status !== 'pending') return -1;
                 if (a.status !== 'pending' && b.status === 'pending') return 1;
@@ -629,31 +1047,52 @@
             });
 
             const genreIcons = {
-                'Card Game': '🃏', 'Action': '⚔️', 'Arcade': '🕹️', 
-                'Puzzle': '🧩', 'Strategy': '♟️', 'Platform': '🏃', 
-                'RPG': '⚔️', 'Other': '🎮'
+                'Card Game': '\u{1F0CF}', 'Action': '\u2694\uFE0F', 'Arcade': '\u{1F3AE}',
+                'Puzzle': '\u{1F9E9}', 'Strategy': '\u265F\uFE0F', 'Platform': '\u{1F3C3}',
+                'RPG': '\u2694\uFE0F', 'Other': '\u{1F3AE}'
             };
+
+            const isAdmin = currentUserRole === 'admin';
 
             games.forEach(game => {
                 const tr = document.createElement('tr');
-                const icon = genreIcons[game.genre] || '🎮';
-                const thumbContent = game.imageUrl 
-                    ? `<img src="${escapeHtml(game.imageUrl)}" alt="" onerror="this.parentElement.textContent='${icon}'">` 
+                const icon = genreIcons[game.genre] || '\u{1F3AE}';
+                const thumbContent = game.imageUrl
+                    ? `<img src="${escapeHtml(game.imageUrl)}" alt="" onerror="this.parentElement.textContent='${icon}'">`
                     : icon;
 
                 let statusHtml = '';
                 if (game.status === 'approved') {
-                    statusHtml = game.isOfficial 
-                        ? `<span class="status-badge status-rl">⭐ RL</span>` 
-                        : `<span class="status-badge status-approved">✓ Approvato</span>`;
+                    statusHtml = game.isOfficial
+                        ? `<span class="status-badge status-rl">RL</span>`
+                        : `<span class="status-badge status-approved">Approvato</span>`;
                 } else if (game.status === 'pending') {
-                    statusHtml = `<span class="status-badge status-pending">⏳ In Attesa</span>`;
+                    statusHtml = `<span class="status-badge status-pending">In Attesa</span>`;
                 } else {
-                    statusHtml = `<span class="status-badge status-rejected">✕ Rifiutato</span>`;
+                    statusHtml = `<span class="status-badge status-rejected">Rifiutato</span>`;
                 }
 
                 const dateStr = game.createdAt ? new Date(game.createdAt.toDate()).toLocaleDateString('it-IT') : '—';
-                const sourceLabel = game.isOfficial ? 'RL Software' : (game.developer || 'Community');
+                let sourceLabel;
+                if (game.isOfficial) {
+                    sourceLabel = 'RL Software';
+                } else if (isAdmin && game.proposedByEmail) {
+                    sourceLabel = game.proposedByEmail;
+                } else {
+                    sourceLabel = game.developer || 'Community';
+                }
+
+                let actionsHtml = '';
+                if (isAdmin && game.status === 'pending') {
+                    actionsHtml += `
+                        <button class="btn-icon approve" title="Approva" onclick="approveGame('${game.id}')">OK</button>
+                        <button class="btn-icon reject" title="Rifiuta" onclick="openRejectModal('${game.id}')">X</button>
+                    `;
+                }
+                actionsHtml += `<button class="btn-icon test" title="Testa il gioco" onclick="testGame('${game.id}')">T</button>`;
+                actionsHtml += `<button class="btn-icon stats" title="Statistiche" onclick="openGameStatsModal('${game.id}')">::</button>`;
+                actionsHtml += `<button class="btn-icon" title="Modifica" onclick="openEditGameModal('${game.id}')">E</button>`;
+                actionsHtml += `<button class="btn-icon delete" title="Elimina" onclick="openDeleteModal('${game.id}', '${escapeHtml(game.title).replace(/'/g, "\\'")}')">D</button>`;
 
                 tr.innerHTML = `
                     <td>
@@ -670,54 +1109,348 @@
                     <td>${statusHtml}</td>
                     <td style="font-size: 0.85rem; color: var(--gray-dark);">${dateStr}</td>
                     <td>
-                        <div class="action-btns">
-                            ${game.status === 'pending' ? `
-                                <button class="btn-icon approve" title="Approva" onclick="approveGame('${game.id}')">✓</button>
-                                <button class="btn-icon reject" title="Rifiuta" onclick="openRejectModal('${game.id}')">✕</button>
-                            ` : ''}
-                            <button class="btn-icon" title="Modifica" onclick="openEditGameModal('${game.id}')">✎</button>
-                            <button class="btn-icon delete" title="Elimina" onclick="openDeleteModal('${game.id}', '${escapeHtml(game.title)}')">🗑</button>
-                        </div>
+                        <div class="action-btns">${actionsHtml}</div>
                     </td>
                 `;
                 gamesTableBody.appendChild(tr);
             });
         }
 
-        // ==================== CONTENT TABS ====================
+        // ==================== ANALYTICS ====================
+        function renderAnalytics() {
+            const total = allPlays.length;
+            const uniqueSet = new Set();
+            allPlays.forEach(p => {
+                const id = p.userId || p.userEmail || (p.id || 'anon');
+                uniqueSet.add(id);
+            });
+            const uniquePlayers = uniqueSet.size;
+
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const todayPlays = allPlays.filter(p => p.timestamp && p.timestamp.toDate() >= today).length;
+            const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekPlays = allPlays.filter(p => p.timestamp && p.timestamp.toDate() >= weekAgo).length;
+
+            document.getElementById('statPlaysTotal').textContent = total;
+            document.getElementById('statUniquePlayers').textContent = uniquePlayers;
+            document.getElementById('statPlaysToday').textContent = todayPlays;
+            document.getElementById('statPlaysWeek').textContent = weekPlays;
+
+            renderTrendChart();
+            renderTopGamesRanking();
+            renderPerGameChart();
+            renderRecentPlaysTable();
+        }
+
+        function renderTrendChart() {
+            const labels = [];
+            const data = [];
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today); d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }));
+                const next = new Date(d); next.setDate(next.getDate() + 1);
+                const count = allPlays.filter(p => {
+                    if (!p.timestamp) return false;
+                    const pd = p.timestamp.toDate();
+                    return pd >= d && pd < next;
+                }).length;
+                data.push(count);
+            }
+
+            const ctx = document.getElementById('playsTrendChart').getContext('2d');
+            if (playsTrendChart) playsTrendChart.destroy();
+            playsTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Giocate',
+                        data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        function renderTopGamesRanking() {
+            const ul = document.getElementById('topGamesRanking');
+            if (allPlays.length === 0) {
+                ul.innerHTML = '<li style="color: var(--gray-dark); justify-content: center;">Nessun dato disponibile</li>';
+                return;
+            }
+            const counts = {};
+            allPlays.forEach(p => {
+                const title = p.gameTitle || 'Senza titolo';
+                counts[title] = (counts[title] || 0) + 1;
+            });
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            const max = sorted[0][1];
+
+            ul.innerHTML = sorted.map(([title, count]) => `
+                <li>
+                    <span class="rank-name" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
+                    <div class="rank-bar-bg"><div class="rank-bar" style="width: ${(count / max * 100)}%;"></div></div>
+                    <span class="rank-value">${count}</span>
+                </li>
+            `).join('');
+        }
+
+        function renderPerGameChart() {
+            const counts = {};
+            allPlays.forEach(p => {
+                const title = p.gameTitle || 'Senza titolo';
+                counts[title] = (counts[title] || 0) + 1;
+            });
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+            const ctx = document.getElementById('playsPerGameChart').getContext('2d');
+            if (playsPerGameChart) playsPerGameChart.destroy();
+
+            if (sorted.length === 0) {
+                playsPerGameChart = null;
+                return;
+            }
+
+            playsPerGameChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([t]) => t.length > 20 ? t.slice(0, 18) + '…' : t),
+                    datasets: [{
+                        label: 'Giocate',
+                        data: sorted.map(([, c]) => c),
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        function renderRecentPlaysTable() {
+            const body = document.getElementById('recentPlaysBody');
+            const recent = [...allPlays]
+                .filter(p => p.timestamp)
+                .sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate())
+                .slice(0, 20);
+
+            if (recent.length === 0) {
+                body.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--gray-dark); padding: 32px;">Nessuna giocata registrata</td></tr>';
+                return;
+            }
+
+            body.innerHTML = recent.map(p => {
+                const player = p.userEmail || (p.userId ? 'Utente' : 'Anonimo');
+                return `
+                    <tr>
+                        <td><div class="game-name">${escapeHtml(p.gameTitle || '—')}</div></td>
+                        <td style="font-size: 0.85rem;">${escapeHtml(player)}</td>
+                        <td style="font-size: 0.85rem; color: var(--gray-dark);">${new Date(p.timestamp.toDate()).toLocaleString('it-IT')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== GAME STATS MODAL ====================
+        window.openGameStatsModal = (docId) => {
+            const game = allGames.find(g => g.id === docId);
+            if (!game) return;
+
+            document.getElementById('gameStatsTitle').textContent = 'Statistiche: ' + game.title;
+
+            const gamePlays = allPlays.filter(p => p.gameId === docId);
+            const total = gamePlays.length;
+            const unique = new Set(gamePlays.map(p => p.userId || p.userEmail || 'anon')).size;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const todayCount = gamePlays.filter(p => p.timestamp && p.timestamp.toDate() >= today).length;
+            const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekCount = gamePlays.filter(p => p.timestamp && p.timestamp.toDate() >= weekAgo).length;
+
+            const labels = [];
+            const data = [];
+            for (let i = 13; i >= 0; i--) {
+                const d = new Date(today); d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }));
+                const next = new Date(d); next.setDate(next.getDate() + 1);
+                const count = gamePlays.filter(p => {
+                    if (!p.timestamp) return false;
+                    const pd = p.timestamp.toDate();
+                    return pd >= d && pd < next;
+                }).length;
+                data.push(count);
+            }
+
+            const recent = [...gamePlays]
+                .filter(p => p.timestamp)
+                .sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate())
+                .slice(0, 5);
+
+            const recentHtml = recent.length === 0
+                ? '<p style="color: var(--gray-dark); font-size: 0.9rem;">Nessuna giocata recente</p>'
+                : `<table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr><th style="text-align: left; padding: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--gray-dark);">Giocatore</th><th style="text-align: left; padding: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--gray-dark);">Quando</th></tr>
+                    </thead>
+                    <tbody>
+                        ${recent.map(p => `
+                            <tr>
+                                <td style="padding: 8px; font-size: 0.85rem;">${escapeHtml(p.userEmail || (p.userId ? 'Utente' : 'Anonimo'))}</td>
+                                <td style="padding: 8px; font-size: 0.85rem; color: var(--gray-dark);">${new Date(p.timestamp.toDate()).toLocaleString('it-IT')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+
+            document.getElementById('gameStatsBody').innerHTML = `
+                <div class="stats-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Giocate Totali</div>
+                        <div class="stat-value blue" style="font-size: 1.5rem;">${total}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Giocatori Unici</div>
+                        <div class="stat-value green" style="font-size: 1.5rem;">${unique}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Oggi</div>
+                        <div class="stat-value orange" style="font-size: 1.5rem;">${todayCount}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Settimana</div>
+                        <div class="stat-value blue" style="font-size: 1.5rem;">${weekCount}</div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Giocate (ultimi 14 giorni)</div>
+                    <div class="chart-wrapper" style="height: 220px;">
+                        <canvas id="miniGameChart"></canvas>
+                    </div>
+                </div>
+                <div style="margin-top: 24px;">
+                    <h3 style="font-weight: 700; margin-bottom: 12px; font-size: 1rem;">Giocate recenti</h3>
+                    ${recentHtml}
+                </div>
+            `;
+
+            document.getElementById('gameStatsModal').classList.add('active');
+
+            setTimeout(() => {
+                const ctx = document.getElementById('miniGameChart').getContext('2d');
+                if (miniGameChart) miniGameChart.destroy();
+                miniGameChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Giocate',
+                            data,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 2,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+            }, 50);
+        };
+
+        // ==================== VIEW / TAB SWITCHING ====================
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+            if (navItem) navItem.classList.add('active');
+
+            const gamesTitle = currentUserRole === 'admin' ? 'Gestione Giochi' : 'I Miei Giochi';
+            const gamesSub = currentUserRole === 'admin'
+                ? 'Aggiungi, modifica e approva i giochi della piattaforma.'
+                : 'Gestisci i tuoi giochi e monitora le statistiche.';
+
+            if (tab === 'analytics') {
+                currentView = 'analytics';
+                document.getElementById('viewGames').style.display = 'none';
+                document.getElementById('viewAnalytics').style.display = 'block';
+                document.getElementById('viewSettings').style.display = 'none';
+                document.getElementById('pageTitle').textContent = 'Analytics';
+                document.getElementById('pageSubtitle').textContent = currentUserRole === 'admin'
+                    ? 'Statistiche globali sulle giocate della piattaforma.'
+                    : 'Statistiche sulle giocate dei tuoi giochi.';
+                renderAnalytics();
+            } else if (tab === 'settings') {
+                currentView = 'settings';
+                document.getElementById('viewGames').style.display = 'none';
+                document.getElementById('viewAnalytics').style.display = 'none';
+                document.getElementById('viewSettings').style.display = 'block';
+                document.getElementById('pageTitle').textContent = 'Impostazioni Account';
+                document.getElementById('pageSubtitle').textContent = 'Gestisci il tuo profilo e la sicurezza del tuo account.';
+                initSettingsView();
+            } else {
+                currentView = 'games';
+                document.getElementById('viewGames').style.display = 'block';
+                document.getElementById('viewAnalytics').style.display = 'none';
+                document.getElementById('viewSettings').style.display = 'none';
+                document.getElementById('pageTitle').textContent = gamesTitle;
+                document.getElementById('pageSubtitle').textContent = gamesSub;
+                if (tab === 'pending') {
+                    switchContentTab('pending');
+                } else {
+                    switchContentTab('all');
+                }
+            }
+        };
+
         window.switchContentTab = (tab) => {
             currentContentTab = tab;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`.tab[data-tab-tab="${tab}"]`).classList.add('active');
+            const tabBtn = document.querySelector(`.tab[data-tab-tab="${tab}"]`);
+            if (tabBtn) tabBtn.classList.add('active');
 
             const titles = {
-                all: 'Tutti i giochi',
+                all: currentUserRole === 'admin' ? 'Tutti i giochi' : 'I miei giochi',
                 rl: 'Giochi RL Software',
                 community: 'Giochi Community',
-                pending: 'Giochi in Attesa'
+                pending: 'Giochi in attesa di approvazione',
+                approved: 'Giochi pubblicati',
+                rejected: 'Giochi rifiutati'
             };
             document.getElementById('tableTitle').textContent = titles[tab] || 'Giochi';
             renderTable();
         };
 
-        window.switchTab = (tab) => {
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
-            if (tab === 'pending') {
-                switchContentTab('pending');
-            } else {
-                switchContentTab('all');
-            }
-        };
-
         // ==================== ADD / EDIT GAME ====================
         window.openAddGameModal = () => {
-            document.getElementById('gameModalTitle').textContent = 'Aggiungi Gioco';
-            document.getElementById('gameSaveBtn').textContent = 'Aggiungi';
+            const isAdmin = currentUserRole === 'admin';
+            document.getElementById('gameModalTitle').textContent = isAdmin ? 'Aggiungi Gioco' : 'Proponi Gioco';
+            document.getElementById('gameSaveBtn').textContent = isAdmin ? 'Aggiungi' : 'Invia Proposta';
             document.getElementById('gameDocId').value = '';
             document.getElementById('gameForm').reset();
-            document.getElementById('inputGameSource').value = 'rl';
-            document.getElementById('inputGameStatus').value = 'approved';
+            document.getElementById('inputGameSource').value = isAdmin ? 'rl' : 'community';
+            document.getElementById('inputGameStatus').value = isAdmin ? 'approved' : 'pending';
+            document.getElementById('inputGameSource').disabled = !isAdmin;
+            document.getElementById('inputGameStatus').disabled = !isAdmin;
             document.getElementById('gameFormError').style.display = 'none';
             document.getElementById('gameModal').classList.add('active');
         };
@@ -725,6 +1458,8 @@
         window.openEditGameModal = (docId) => {
             const game = allGames.find(g => g.id === docId);
             if (!game) return;
+
+            const isAdmin = currentUserRole === 'admin';
 
             document.getElementById('gameModalTitle').textContent = 'Modifica Gioco';
             document.getElementById('gameSaveBtn').textContent = 'Salva Modifiche';
@@ -737,6 +1472,8 @@
             document.getElementById('inputGameImage').value = game.imageUrl || '';
             document.getElementById('inputGameSource').value = game.isOfficial ? 'rl' : 'community';
             document.getElementById('inputGameStatus').value = game.status || 'approved';
+            document.getElementById('inputGameSource').disabled = !isAdmin;
+            document.getElementById('inputGameStatus').disabled = !isAdmin;
             document.getElementById('gameFormError').style.display = 'none';
             document.getElementById('gameModal').classList.add('active');
         };
@@ -752,6 +1489,10 @@
             const errorEl = document.getElementById('gameFormError');
             const docId = document.getElementById('gameDocId').value;
 
+            const isAdmin = currentUserRole === 'admin';
+            const sourceVal = document.getElementById('inputGameSource').value;
+            const statusVal = document.getElementById('inputGameStatus').value;
+
             const data = {
                 title: document.getElementById('inputGameTitle').value.trim(),
                 developer: document.getElementById('inputGameDev').value.trim(),
@@ -759,10 +1500,16 @@
                 description: document.getElementById('inputGameDesc').value.trim(),
                 link: document.getElementById('inputGameLink').value.trim(),
                 imageUrl: document.getElementById('inputGameImage').value.trim() || null,
-                isOfficial: document.getElementById('inputGameSource').value === 'rl',
-                status: document.getElementById('inputGameStatus').value,
+                isOfficial: isAdmin ? (sourceVal === 'rl') : false,
+                status: isAdmin ? statusVal : 'pending',
                 updatedAt: serverTimestamp()
             };
+
+            if (!docId) {
+                data.proposedBy = currentUser.uid;
+                data.proposedByEmail = currentUser.email;
+                data.createdAt = serverTimestamp();
+            }
 
             btn.disabled = true;
             btn.textContent = 'Salvataggio...';
@@ -773,18 +1520,17 @@
                     await updateDoc(doc(db, 'games', docId), data);
                     showToast('Gioco aggiornato!', 'success');
                 } else {
-                    data.createdAt = serverTimestamp();
                     await addDoc(collection(db, 'games'), data);
-                    showToast('Gioco aggiunto!', 'success');
+                    showToast(isAdmin ? 'Gioco aggiunto!' : 'Proposta inviata! In attesa di approvazione.', 'success');
                 }
                 closeGameModal();
             } catch (err) {
                 console.error(err);
-                errorEl.textContent = 'Errore nel salvataggio.';
+                errorEl.textContent = 'Errore nel salvataggio: ' + (err.message || 'riprova.');
                 errorEl.style.display = 'block';
             } finally {
                 btn.disabled = false;
-                btn.textContent = docId ? 'Salva Modifiche' : 'Aggiungi Gioco';
+                btn.textContent = docId ? 'Salva Modifiche' : (isAdmin ? 'Aggiungi' : 'Invia Proposta');
             }
         };
 
@@ -826,7 +1572,7 @@
         // ==================== DELETE ====================
         window.openDeleteModal = (docId, title) => {
             document.getElementById('deleteDocId').value = docId;
-            document.getElementById('deleteGameName').textContent = `"${title}"`;
+            document.getElementById('deleteGameName').textContent = '"' + title + '"';
             document.getElementById('deleteModal').classList.add('active');
         };
 
@@ -841,16 +1587,266 @@
             }
         };
 
+        // ==================== TEST GAME ====================
+        window.testGame = (docId) => {
+            const game = allGames.find(g => g.id === docId);
+            if (!game) {
+                showToast('Gioco non trovato.', 'error');
+                return;
+            }
+            if (!game.link) {
+                showToast('Nessun link disponibile per questo gioco.', 'error');
+                return;
+            }
+            window.open(game.link, '_blank', 'noopener,noreferrer');
+        };
+
         // ==================== LOGOUT ====================
         window.handleLogout = () => {
             signOut(auth).then(() => window.location.href = 'index.html');
         };
 
+        // ==================== SETTINGS ====================
+        let selectedAvatarUrl = '';
+        let pendingAvatarUrl = '';
+        let pendingAvatarName = '';
+        let currentAvatarStyle = 'all';
+
+        const AVATAR_STYLES = [
+            { id: 'avataaars', name: 'Personaggi' },
+            { id: 'bottts', name: 'Robot' },
+            { id: 'voxel-bot', name: 'Robot+'},
+            { id: 'micah', name: 'Volti' },
+            { id: 'pixel-art', name: 'Pixel' },
+            { id: 'lorelei', name: 'Illustrazioni' },
+            { id: 'fun-emoji', name: 'Emoji' }
+            //{ id: 'tumbs', name: 'Tumbs'}
+        ];
+
+        const AVATAR_SEEDS = [
+            'Aria', 'Bilbo', 'Cleo', 'Dante', 'Elia', 'Fiona', 'Giada', 'Hugo',
+            'Iris', 'Kira', 'Luna', 'Milo', 'Nina', 'Orlando', 'Penelope', 'Rudy'
+        ];
+
+        // Lista avatar identica per tutti gli utenti (16 nomi x 7 stili = 112 avatar)
+        // voxel-bot e' disponibile solo dalla versione 10.x dell'API DiceBear,
+        // quindi viene usato un if per scegliere la versione API corretta per ogni stile.
+        const ALL_AVATARS = AVATAR_STYLES.flatMap(style => {
+            // Se lo stile e' voxel-bot usa la versione 10.x, altrimenti 7.x
+            const apiVersion = style.id === 'voxel-bot' ? '10.x' : '7.x';
+            return AVATAR_SEEDS.map(seed => ({
+                style: style.id,
+                styleName: style.name,
+                seed: seed,
+                name: seed + ' - ' + style.name,
+                url: 'https://api.dicebear.com/' + apiVersion + '/' + style.id + '/svg?seed=' + encodeURIComponent(seed)
+            }));
+        });
+
+        function initAvatarStyleTabs() {
+            const tabsEl = document.getElementById('avatarStyleTabs');
+            const tabs = [{ id: 'all', name: 'Tutti' }].concat(AVATAR_STYLES);
+            tabsEl.innerHTML = tabs.map(t =>
+                '<button class="avatar-style-tab' + (t.id === currentAvatarStyle ? ' active' : '') + '" onclick="filterAvatars(\'' + t.id + '\')">' + t.name + '</button>'
+            ).join('');
+        }
+
+        function renderAvatarGrid() {
+            const grid = document.getElementById('avatarModalGrid');
+            const search = (document.getElementById('avatarSearch').value || '').toLowerCase().trim();
+
+            const filtered = ALL_AVATARS.filter(a => {
+                if (currentAvatarStyle !== 'all' && a.style !== currentAvatarStyle) return false;
+                if (search && a.seed.toLowerCase().indexOf(search) === -1) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--gray-dark); padding: 40px;">Nessun avatar trovato</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(a => {
+                const isSelected = a.url === pendingAvatarUrl;
+                const safeUrl = a.url.replace(/'/g, "\\'");
+                const safeName = a.name.replace(/'/g, "\\'");
+                return '<div class="avatar-tile' + (isSelected ? ' selected' : '') + '" title="' + escapeHtml(a.name) + '" onclick="selectAvatarInModal(\'' + safeUrl + '\', \'' + safeName + '\')">'
+                    + '<img src="' + a.url + '" alt="' + escapeHtml(a.name) + '" loading="lazy">'
+                    + '</div>';
+            }).join('');
+        }
+
+        window.filterAvatars = (styleId) => {
+            currentAvatarStyle = styleId;
+            initAvatarStyleTabs();
+            renderAvatarGrid();
+        };
+
+        window.selectAvatarInModal = (url, name) => {
+            pendingAvatarUrl = url;
+            pendingAvatarName = name;
+            renderAvatarGrid();
+        };
+
+        window.randomAvatar = () => {
+            const random = ALL_AVATARS[Math.floor(Math.random() * ALL_AVATARS.length)];
+            pendingAvatarUrl = random.url;
+            pendingAvatarName = random.name;
+            renderAvatarGrid();
+        };
+
+        window.openAvatarModal = () => {
+            pendingAvatarUrl = selectedAvatarUrl || (currentUser ? currentUser.photoURL : '') || ALL_AVATARS[0].url;
+            pendingAvatarName = '';
+            document.getElementById('avatarSearch').value = '';
+            currentAvatarStyle = 'all';
+            document.getElementById('avatarCount').textContent = ALL_AVATARS.length;
+            initAvatarStyleTabs();
+            renderAvatarGrid();
+            document.getElementById('avatarModal').classList.add('active');
+        };
+
+        window.closeAvatarModal = () => {
+            document.getElementById('avatarModal').classList.remove('active');
+        };
+
+        window.confirmAvatar = () => {
+            if (!pendingAvatarUrl) {
+                showToast('Seleziona un avatar.', 'error');
+                return;
+            }
+            selectedAvatarUrl = pendingAvatarUrl;
+            document.getElementById('previewAvatar').src = pendingAvatarUrl;
+            document.getElementById('avatarName').textContent = pendingAvatarName || 'Avatar personalizzato';
+            closeAvatarModal();
+        };
+
+        // Listener per la ricerca (aggiunto una sola volta)
+        document.getElementById('avatarSearch').addEventListener('input', renderAvatarGrid);
+
+        function initSettingsView() {
+            if (!currentUser) return;
+            const email = currentUser.email || '';
+            document.getElementById('inputEmail').value = email;
+            document.getElementById('inputNickname').value = currentUser.displayName || '';
+            const avatarUrl = currentUser.photoURL || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(email));
+            document.getElementById('previewAvatar').src = avatarUrl;
+            selectedAvatarUrl = currentUser.photoURL || '';
+            document.getElementById('avatarName').textContent = currentUser.photoURL ? 'Avatar attuale' : 'Avatar predefinito';
+
+            // Setup default tab options based on role
+            const tabSelect = document.getElementById('prefDefaultTab');
+            const isAdmin = currentUserRole === 'admin';
+            tabSelect.innerHTML = isAdmin
+                ? '<option value="all">Tutti i giochi</option><option value="rl">RL Software</option><option value="community">Community</option><option value="pending">In Attesa</option>'
+                : '<option value="all">Tutti</option><option value="approved">Pubblicati</option><option value="pending">In Attesa</option><option value="rejected">Rifiutati</option>';
+
+            loadUserPreferences();
+        }
+
+        async function loadUserPreferences() {
+            if (!currentUser) return;
+            try {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                const data = userDoc.exists() ? userDoc.data() : {};
+                document.getElementById('prefBio').value = data.bio || '';
+                document.getElementById('prefGenre').value = data.preferredGenre || '';
+                document.getElementById('prefDefaultTab').value = data.defaultTab || 'all';
+                document.getElementById('prefEmailNotif').checked = !!data.emailNotifications;
+                document.getElementById('prefPublicEmail').checked = !!data.publicEmail;
+                document.getElementById('bioCounter').textContent = (data.bio || '').length;
+            } catch (err) {
+                console.warn('Errore caricamento preferenze:', err);
+            }
+        }
+
+        window.saveProfileExtended = async () => {
+            if (!currentUser) return;
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    bio: document.getElementById('prefBio').value.trim() || null,
+                    preferredGenre: document.getElementById('prefGenre').value || null,
+                    updatedAt: serverTimestamp()
+                });
+                showToast('Profilo esteso salvato!', 'success');
+            } catch (err) {
+                showToast('Errore: ' + err.message, 'error');
+            }
+        };
+
+        window.savePreferences = async () => {
+            if (!currentUser) return;
+            try {
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    defaultTab: document.getElementById('prefDefaultTab').value,
+                    emailNotifications: document.getElementById('prefEmailNotif').checked,
+                    publicEmail: document.getElementById('prefPublicEmail').checked,
+                    updatedAt: serverTimestamp()
+                });
+                showToast('Preferenze salvate!', 'success');
+            } catch (err) {
+                showToast('Errore: ' + err.message, 'error');
+            }
+        };
+
+        // Listener per il contatore caratteri bio (aggiunto una sola volta)
+        document.getElementById('prefBio').addEventListener('input', (e) => {
+            document.getElementById('bioCounter').textContent = e.target.value.length;
+        });
+
+        window.saveProfileSettings = async () => {
+            if (!currentUser) return;
+            const newName = document.getElementById('inputNickname').value.trim();
+            if (!selectedAvatarUrl) {
+                showToast('Seleziona un avatar cliccando "Cambia Avatar".', 'error');
+                return;
+            }
+            try {
+                await updateProfile(auth.currentUser, {
+                    displayName: newName || null,
+                    photoURL: selectedAvatarUrl
+                });
+                sidebarAvatar.src = selectedAvatarUrl;
+                sidebarEmail.textContent = newName || currentUser.email;
+                showToast('Profilo aggiornato!', 'success');
+            } catch (error) {
+                showToast('Errore: ' + error.message, 'error');
+            }
+        };
+
+        window.savePasswordSettings = async () => {
+            if (!currentUser) return;
+            const newPass = document.getElementById('inputPassword').value;
+            if (newPass.length < 6) {
+                showToast('La password deve avere almeno 6 caratteri.', 'error');
+                return;
+            }
+            try {
+                await updatePassword(auth.currentUser, newPass);
+                document.getElementById('inputPassword').value = '';
+                showToast('Password aggiornata!', 'success');
+            } catch (error) {
+                showToast('Errore: ' + error.message + ' (potrebbe essere necessario rieffettuare il login recente)', 'error');
+            }
+        };
+
+        window.deleteAccountNow = async () => {
+            if (!confirm('Sei SICURO? Questa azione cancellerà definitivamente il tuo account e tutti i dati associati.')) return;
+            if (!confirm('Conferma definitiva: tutti i tuoi giochi e statistiche verranno persi. Procedere?')) return;
+            try {
+                await deleteUser(auth.currentUser);
+                showToast('Account eliminato.', 'success');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (error) {
+                showToast('Errore: ' + error.message + ' (potrebbe essere necessario rieffettuare il login recente)', 'error');
+            }
+        };
+
         // ==================== UTILS ====================
         function escapeHtml(text) {
-            if (!text) return '';
+            if (text === null || text === undefined) return '';
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = String(text);
             return div.innerHTML;
         }
 
@@ -867,7 +1863,31 @@
                 if (e.target === modal) modal.classList.remove('active');
             });
         });
+
+        // ==================== PUBLIC TRACKING API ====================
+        // Esposto per permettere a games.html (o altre pagine) di registrare una giocata.
+        // Esempio:
+        //   import { RLDashboard } from './dashboard.html';  (via window globale)
+        //   RLDashboard.trackPlay(game.id, game.title, game.proposedBy);
+        window.RLDashboard = {
+            trackPlay: async (gameId, gameTitle, proposedBy) => {
+                try {
+                    const user = auth.currentUser;
+                    await addDoc(collection(db, 'gamePlays'), {
+                        gameId: gameId || null,
+                        gameTitle: gameTitle || null,
+                        proposedBy: proposedBy || null,
+                        userId: user ? user.uid : null,
+                        userEmail: user ? user.email : null,
+                        timestamp: serverTimestamp()
+                    });
+                } catch (err) {
+                    console.warn('Errore nel tracciamento della giocata:', err);
+                }
+            },
+            getRole: () => currentUserRole,
+            getCurrentUser: () => currentUser
+        };
     </script>
 </body>
 </html>
-
